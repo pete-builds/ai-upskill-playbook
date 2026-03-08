@@ -1,12 +1,35 @@
 # AI Upskill Playbook
 
-This is my AI upskill origin story, one layer at a time.
+**Build a self-hosted AI stack from scratch, one layer at a time.**
 
-I learn best by doing. Over the past few months I've been building a self-hosted AI stack from scratch, one service at a time, learning how the pieces connect along the way. Each section below is a real layer in that stack today.
+This is my AI upskill origin story. I learn best by doing. Over the past few months I've been building a self-hosted AI stack from scratch, one service at a time, learning how the pieces connect along the way. Each section below is a real layer in that stack today.
 
 There are many ways to upskill in AI. This is just the path I took. Whether you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job, this can help get you going. This guide is probably best for someone with an IT background, but if you're curious and willing to learn, anyone can do it.
 
 This is not comprehensive. I'm just getting started and there's so much more to learn. This is everything I've set up so far, and I'll keep updating it as I go. If you've been down this path before, I'd love to hear what I've missed.
+
+### What you'll end up with
+
+```
+You (laptop)
+ │
+ ├── Claude Code ──── AI coding assistant in your terminal
+ │    ├── Agents ──── Specialized AI assistants (infra, webapps, MCP, career)
+ │    └── MCP ─────── Direct access to GitHub, Portainer, n8n, Plex, etc.
+ │
+ └── Linux Box ────── Always-on server running Docker
+      │
+      ├── LiteLLM ──── Unified API gateway (one endpoint, any model)
+      │    ├── Cloud ── OpenAI, Anthropic, Gemini
+      │    └── Local ── Ollama (Llama, Mistral, DeepSeek, Qwen)
+      │
+      ├── n8n ──────── Workflow automation (RAG, webhooks, scheduled jobs)
+      ├── SearXNG ──── Private web search for AI tools
+      ├── Open WebUI ── Chat interface for all models
+      ├── Perplexica ── AI-powered research engine
+      ├── Your Apps ─── Webapps you build and deploy
+      └── Monitoring ── Uptime Kuma, Watchtower, Caddy, Tailscale
+```
 
 ### What you'll learn
 
@@ -347,6 +370,15 @@ Terms you'll run into as you work through this playbook.
 | **SSH** | Secure Shell. A protocol for securely connecting to and running commands on remote machines. |
 | **Headless** | A server running without a monitor, keyboard, or desktop environment. Managed entirely via SSH. |
 | **Self-hosted** | Running software on your own hardware instead of paying for a cloud service. |
+
+---
+
+## Up Next
+
+Things I haven't built yet but plan to explore.
+
+- **Evaluation frameworks.** As you start shipping AI-powered apps, you need a way to measure if your models are actually getting better. Tools like [Braintrust](https://www.braintrust.dev/) and [promptfoo](https://www.promptfoo.dev/) let you run evals against prompts and models systematically instead of eyeballing outputs.
+- **Vector databases.** n8n handles basic RAG, but scaling up means choosing a dedicated vector store. [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), and [pgvector](https://github.com/pgvector/pgvector) are the main options depending on whether you want self-hosted, managed, or built into Postgres.
 
 ---
 
