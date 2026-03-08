@@ -2,7 +2,7 @@
 
 **Build a self-hosted AI stack from scratch, one layer at a time.**
 
-This is my AI upskill origin story. I learn best by doing. Over the past few months I've been building a self-hosted AI stack from scratch, one service at a time, learning how the pieces connect along the way. Each section below is a real layer in that stack today.
+This is my AI upskill origin story. Over the past few months I've been building a self-hosted AI stack from scratch, one service at a time, learning how the pieces connect along the way. Each section below is a real layer in that stack today.
 
 There are many ways to upskill in AI. This is just the path I took. Whether you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job, this can help get you going. This guide is probably best for someone with an IT background, but if you're curious and willing to learn, anyone can do it.
 
