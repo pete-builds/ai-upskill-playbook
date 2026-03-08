@@ -63,6 +63,8 @@ By the end of this playbook, you'll understand how to:
 |---|-------|------|-----|
 | 13 | [Monitoring + Infrastructure](#13-monitoring--infrastructure) | Uptime Kuma, Watchtower, Caddy, Tailscale | Keep it all running and reachable |
 
+New to some of these terms? See the [Vocabulary](#vocabulary) at the bottom.
+
 ---
 
 ## Getting Started
@@ -263,6 +265,35 @@ Once you have services running, you need to keep them running and make them acce
 - **[Caddy](https://caddyserver.com/):** reverse proxy with automatic HTTPS (TLS certificates)
 - **[Tailscale](https://tailscale.com/):** mesh VPN for secure remote access without port forwarding
 - **[Homepage](https://github.com/gethomepage/homepage)/[Homarr](https://github.com/ajnart/homarr):** dashboard to see everything at a glance
+
+---
+
+## Vocabulary
+
+Terms you'll run into as you work through this playbook.
+
+| Term | What It Means |
+|------|---------------|
+| **LLM** | Large Language Model. The AI models that power tools like ChatGPT, Claude, and Llama. |
+| **Agent** | An AI assistant with a specific role, its own context, and access to tools. |
+| **Subagent** | An agent spawned by another agent to handle a specific subtask. |
+| **MCP** | Model Context Protocol. A standard that lets AI tools call external services directly. |
+| **SSE** | Server-Sent Events. A transport method for MCP servers that works over the network. |
+| **RAG** | Retrieval-Augmented Generation. Feeding relevant documents to an LLM so it can answer questions about them. |
+| **Prompt injection** | A security risk where malicious text tricks an AI into doing something unintended. |
+| **Context window** | The amount of text an LLM can process in a single conversation. Measured in tokens. |
+| **Token** | A chunk of text (roughly a word or part of a word) that LLMs use to process language. |
+| **Inference** | The process of running a prompt through a model and getting a response. |
+| **Embedding** | A numerical representation of text that captures meaning. Used for search and similarity. |
+| **API gateway** | A single endpoint that routes requests to multiple backend services or model providers. |
+| **Docker container** | A lightweight, isolated environment that runs an application with all its dependencies. |
+| **docker-compose** | A tool for defining and running multi-container Docker applications using a YAML file. |
+| **Volume** | Persistent storage for Docker containers. Data survives container restarts. |
+| **Reverse proxy** | A server that sits in front of your services, handles HTTPS, and routes traffic to the right container. |
+| **Webhook** | A URL that triggers an action when another service sends it a request. |
+| **SSH** | Secure Shell. A protocol for securely connecting to and running commands on remote machines. |
+| **Headless** | A server running without a monitor, keyboard, or desktop environment. Managed entirely via SSH. |
+| **Self-hosted** | Running software on your own hardware instead of paying for a cloud service. |
 
 ---
 
