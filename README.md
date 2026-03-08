@@ -52,50 +52,52 @@ Not saying this is the right way or the wrong way. But I've learned a lot and I'
 
 ## 1. Claude Code
 
-Claude Code is an AI coding assistant that runs in your terminal. It can read your files, write code, run commands, and iterate on problems with you. This is layer one because it accelerates everything that comes after. You're not just following tutorials anymore. You have a pair programmer that knows the docs.
+[Claude Code](https://code.claude.com/docs/en/overview) is an AI coding assistant that runs in your terminal. It can read your files, write code, run commands, and iterate on problems with you. This is layer one because it accelerates everything that comes after. You're not just following tutorials anymore. You have a pair programmer that knows the docs.
 
-- Install Claude Code (npm, requires Node.js)
+- Install [Claude Code](https://code.claude.com/docs/en/overview) (npm, requires Node.js)
 - Connect to Anthropic API (direct key or API gateway)
 - Learn the core loop: describe what you want, review what it does, iterate
-- Set up GitHub integration for version control from day one
-- Customize your statusline (context usage, model, git status, session metrics)
-- Create a `CLAUDE.md` project file for persistent instructions
+- Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/github) for version control and repo management from day one
+- Customize your [statusline](https://code.claude.com/docs/en/interactive-mode#status-bar) (context usage, model, git status, session metrics). I built a [custom one](https://github.com/pete-builds/claude-code-statusline) with weather, billing tier, and battery.
+- Create a [`CLAUDE.md`](https://code.claude.com/docs/en/memory) project file for persistent instructions
 - Use `/init` to scaffold new projects
-- Learn slash commands: `/compact`, `/clear`, `/model`, `/cost`
-- Set up hooks for session start, tool calls, and notifications
+- Learn [slash commands](https://code.claude.com/docs/en/interactive-mode#built-in-commands): `/compact`, `/clear`, `/model`, `/cost`
+- Set up [hooks](https://code.claude.com/docs/en/hooks) for session start, tool calls, and notifications
+- Build [custom skills](https://code.claude.com/docs/en/skills) (slash commands) for repeatable workflows
+- Create [custom subagents](https://code.claude.com/docs/en/sub-agents) to delegate specialized tasks
 
-**Key concept:** Claude Code isn't autocomplete. It's a pair programmer that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools.
+**Key concept:** Claude Code isn't autocomplete. It's a pair programmer that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools. Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible.
 
 ## 2. Linux Box
 
-You need one computer that stays on. It doesn't need to be powerful. A used mini PC, an old laptop, or a NUC will do. Install Ubuntu Server or Debian.
+You need one computer that stays on. It doesn't need to be powerful. A used mini PC, an old laptop, or a NUC will do. Install [Ubuntu Server](https://ubuntu.com/download/server) or Debian.
 
 - Any x86 machine with 8GB RAM and a 256GB SSD
 - Ubuntu Server or Debian (headless, no desktop environment needed)
 - SSH access configured (key-based, no passwords)
 - Static IP or DHCP reservation on your router
-- Tailscale for remote access without port forwarding
+- [Tailscale](https://tailscale.com/) for remote access without port forwarding
 - This is your foundation. Everything else is a container on this box.
 
 ## 3. Docker + Portainer
 
-Docker lets you run applications in isolated containers. Portainer gives you a web UI to manage them instead of memorizing CLI commands.
+[Docker](https://docs.docker.com/engine/install/) lets you run applications in isolated containers. [Portainer](https://www.portainer.io/) gives you a web UI to manage them instead of memorizing CLI commands.
 
-- Install Docker Engine (not Docker Desktop)
-- Install Portainer CE as your first container
-- Learn docker-compose: one YAML file per service
+- Install [Docker Engine](https://docs.docker.com/engine/install/) (not Docker Desktop)
+- Install [Portainer CE](https://docs.portainer.io/start/install-ce) as your first container
+- Learn [docker-compose](https://docs.docker.com/compose/): one YAML file per service
 - Understand volumes (persistent data) vs bind mounts
 - Understand networking: bridge, host, and container DNS
-- Watchtower for automatic image updates (optional, be careful in production)
+- [Watchtower](https://github.com/containrrr/watchtower) for automatic image updates (optional, be careful in production)
 - Once you have these two, installing new services goes from "follow a 47-step guide" to "paste a docker-compose file and click deploy"
 
 ## 4. Agentic Workflows
 
-This is where Claude Code goes from "smart assistant" to "team of specialists." Instead of one conversation handling everything, you build purpose-built agents that each own a domain.
+This is where Claude Code goes from "smart assistant" to "team of specialists." Instead of one conversation handling everything, you build purpose-built agents that each own a domain. See the official docs on [custom subagents](https://code.claude.com/docs/en/sub-agents) and [skills](https://code.claude.com/docs/en/skills).
 
-- **What is an agent?** A slash command that spawns a subagent with its own persona, context docs, tools, and SOPs
+- **What is an agent?** A [skill](https://code.claude.com/docs/en/skills) (slash command) that spawns a [subagent](https://code.claude.com/docs/en/sub-agents) with its own persona, context docs, tools, and SOPs
 - **Why agents?** Context isolation. Each agent reads only what it needs, so it doesn't get confused by unrelated information.
-- **Agent routing:** a table in `CLAUDE.md` that maps topics to the right agent automatically
+- **Agent routing:** a table in [`CLAUDE.md`](https://code.claude.com/docs/en/memory) that maps topics to the right agent automatically
 - **Trigger phrases:** each agent announces itself before working ("Checking with Tank...stand by")
 - **Subagent strategy:** offload research and parallel work to subagents, one task per agent
 - **Memory files:** persistent notes that agents read at session start to build on previous work
@@ -113,7 +115,7 @@ This is where Claude Code goes from "smart assistant" to "team of specialists." 
 
 ### Building Your First Agent
 
-- Create a skill file in `.claude/commands/your-agent.md`
+- Create a skill file in `.claude/commands/your-agent.md` (see [skills docs](https://code.claude.com/docs/en/skills))
 - Write a context doc with system knowledge, SOPs, and constraints
 - Define a trigger phrase and startup sequence
 - Add it to the routing table in `CLAUDE.md`
@@ -128,39 +130,39 @@ This is where Claude Code goes from "smart assistant" to "team of specialists." 
 
 ## 5. MCP Servers
 
-Model Context Protocol (MCP) servers give Claude Code direct access to your services. Instead of copy-pasting between terminals, you just ask Claude to do it and it calls the API directly.
+[Model Context Protocol (MCP)](https://code.claude.com/docs/en/mcp) servers give Claude Code direct access to your services. Instead of copy-pasting between terminals, you just ask Claude to do it and it calls the API directly. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for pre-built servers.
 
 - **What is MCP?** A protocol that lets AI assistants call external tools via structured API
 - **Transports:** SSE (network, accessible from any machine) vs stdio (local binary)
-- **Build pattern:** Python + FastMCP + httpx + Docker
+- **Build pattern:** Python + [FastMCP](https://github.com/jlowin/fastmcp) + httpx + Docker
 - **Deploy as containers** on your Linux box, register with `claude mcp add`
 - **Example servers you can build:**
-  - Infrastructure management (Portainer, Uptime Kuma)
+  - Infrastructure management ([Portainer MCP](https://github.com/portainer/portainer-mcp))
+  - [GitHub MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/github) (PRs, issues, code search)
   - Workflow execution (n8n)
   - Home automation, DNS, network tools
-  - GitHub (PRs, issues, code search)
   - Calendar, email, and other integrations
 - Each MCP server = a set of tools Claude can call on demand
 - SSE transport recommended. One server, accessible from any machine on your network.
 
 ## 6. LiteLLM
 
-LiteLLM sits between your apps and AI model providers. Point everything at one URL, and LiteLLM routes to OpenAI, Anthropic, local models, or whatever you configure.
+[LiteLLM](https://github.com/BerriAI/litellm) sits between your apps and AI model providers. Point everything at one URL, and LiteLLM routes to OpenAI, Anthropic, local models, or whatever you configure.
 
 - Unified OpenAI-compatible API for 100+ model providers
 - One endpoint, swap models without changing client code
 - Track usage and costs across all providers
-- Route between cloud APIs and local Ollama models
+- Route between cloud APIs and local [Ollama](https://ollama.com/) models
 - Load balancing and fallback between providers
 - Set up your API connection once. Every tool downstream just talks to LiteLLM.
 
 ## 7. Local Models
 
-Run open-source LLMs on your own hardware with Ollama. A Mac Mini with Apple Silicon is surprisingly capable, but any machine with a decent GPU works.
+Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A Mac Mini with Apple Silicon is surprisingly capable, but any machine with a decent GPU works.
 
-- Ollama for model management and inference
+- [Ollama](https://ollama.com/) for model management and inference
 - Apple Silicon (M-series) for surprisingly good local performance
-- Models: Llama, Mistral, Qwen, DeepSeek, Gemma, and more
+- Models: [Llama](https://ollama.com/library/llama3.2), [Mistral](https://ollama.com/library/mistral), [Qwen](https://ollama.com/library/qwen2.5), [DeepSeek](https://ollama.com/library/deepseek-r1), [Gemma](https://ollama.com/library/gemma2), and more
 - Free, private, and always available
 - Register with LiteLLM so all your tools can use them
 - Won't replace Claude for complex work, but perfect for bulk tasks, embeddings, and experimentation
@@ -168,7 +170,7 @@ Run open-source LLMs on your own hardware with Ollama. A Mac Mini with Apple Sil
 
 ## 8. SearXNG
 
-SearXNG is a private metasearch engine that aggregates results from Google, Bing, DuckDuckGo, and dozens of other sources without tracking you.
+[SearXNG](https://github.com/searxng/searxng) is a private metasearch engine that aggregates results from Google, Bing, DuckDuckGo, and dozens of other sources without tracking you.
 
 - Self-hosted, no API keys needed
 - Aggregates results from 70+ search engines
@@ -179,7 +181,7 @@ SearXNG is a private metasearch engine that aggregates results from Google, Bing
 
 ## 9. n8n
 
-n8n is a workflow automation platform. Think Zapier, but self-hosted and free. Drag and drop nodes to connect APIs, databases, AI models, and triggers.
+[n8n](https://n8n.io/) is a workflow automation platform. Think Zapier, but self-hosted and free. Drag and drop nodes to connect APIs, databases, AI models, and triggers.
 
 - Visual workflow builder (no code required, but code is available when you need it)
 - AI agent nodes with tool calling and memory
@@ -191,7 +193,7 @@ n8n is a workflow automation platform. Think Zapier, but self-hosted and free. D
 
 ## 10. Open WebUI
 
-Open WebUI gives you a ChatGPT-style interface for all your models, local and remote. Point it at Ollama and LiteLLM and everyone in your house can use AI without a subscription.
+[Open WebUI](https://github.com/open-webui/open-webui) gives you a ChatGPT-style interface for all your models, local and remote. Point it at Ollama and LiteLLM and everyone in your house can use AI without a subscription.
 
 - Web-based chat interface (looks and feels like ChatGPT)
 - Connect to Ollama (local models) and LiteLLM (cloud models)
@@ -202,7 +204,7 @@ Open WebUI gives you a ChatGPT-style interface for all your models, local and re
 
 ## 11. Perplexica
 
-Perplexica is a self-hosted alternative to Perplexity AI. It uses SearXNG for web search and your local/cloud models for synthesis.
+[Perplexica](https://github.com/ItzCrazyKns/Perplexica) is a self-hosted alternative to Perplexity AI. It uses SearXNG for web search and your local/cloud models for synthesis.
 
 - AI-powered research and answer engine
 - Uses your SearXNG instance for web search (no API keys)
@@ -216,22 +218,22 @@ The best way to prove your stack works is to build something real with it. Claud
 
 - **Start simple:** Pick a problem you actually have
 - **Example projects:**
-  - Phantom Paste: zero-knowledge ephemeral pastebin (Go + SQLite + vanilla JS)
-  - Model Arena: blind AI model comparison with ELO leaderboard (Python/FastAPI + SQLite)
+  - [Phantom Paste](https://github.com/pete-builds/phantom-paste): zero-knowledge ephemeral pastebin (Go + SQLite + vanilla JS)
+  - [Model Arena](https://github.com/pete-builds/open-model-arena): blind AI model comparison with ELO leaderboard (Python/FastAPI + SQLite)
 - **The workflow:** Describe it to Claude Code, iterate on the code, Dockerize it, deploy to your Linux box
 - **Push to GitHub.** Public repos build your portfolio.
-- **Tailscale Funnel** for sharing without exposing your network
+- **[Tailscale Funnel](https://tailscale.com/kb/1223/funnel)** for sharing without exposing your network
 - You'll learn more building one real thing than reading ten tutorials
 
 ## 13. Monitoring + Infrastructure
 
 Once you have services running, you need to keep them running and make them accessible.
 
-- **Uptime Kuma:** monitor all your services, get alerts when something goes down
-- **Watchtower:** automatically pull and redeploy updated container images
-- **Caddy:** reverse proxy with automatic HTTPS (TLS certificates)
-- **Tailscale:** mesh VPN for secure remote access without port forwarding
-- **Homepage/Homarr:** dashboard to see everything at a glance
+- **[Uptime Kuma](https://github.com/louislam/uptime-kuma):** monitor all your services, get alerts when something goes down
+- **[Watchtower](https://github.com/containrrr/watchtower):** automatically pull and redeploy updated container images
+- **[Caddy](https://caddyserver.com/):** reverse proxy with automatic HTTPS (TLS certificates)
+- **[Tailscale](https://tailscale.com/):** mesh VPN for secure remote access without port forwarding
+- **[Homepage](https://github.com/gethomepage/homepage)/[Homarr](https://github.com/ajnart/homarr):** dashboard to see everything at a glance
 
 ---
 
@@ -239,7 +241,7 @@ Once you have services running, you need to keep them running and make them acce
 
 You don't need all thirteen layers. Start with 1-3 and you'll already be ahead of most people. Each layer is optional. Skip what doesn't interest you, come back to it later.
 
-The real unlock is **Claude Code + a Linux box + Docker**. Once you have those three, building the rest is just conversations with your AI pair programmer.
+The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a Linux box + [Docker](https://docs.docker.com/engine/install/)**. Once you have those three, building the rest is just conversations with your AI pair programmer.
 
 ---
 
