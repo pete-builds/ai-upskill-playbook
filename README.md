@@ -219,6 +219,7 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 - Webhook triggers for real-time integrations
 - Schedule-based workflows for recurring tasks
 - Built-in MCP server: expose workflows as tools for Claude Code
+- Build RAG pipelines: feed documents to an LLM so it can answer questions about your own data
 - Connect to LiteLLM, Ollama, SearXNG, and everything else in your stack
 - This is where your stack starts doing things on its own
 
@@ -247,7 +248,23 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 
 The best way to prove your stack works is to build something real with it. Claude Code + Docker + your Linux box = you can go from idea to deployed webapp in one session.
 
-- **Start simple:** Pick a problem you actually have
+### Build an agent first
+
+Before you start coding, build a dedicated agent (see [Agentic Workflows](#4-agentic-workflows)) that owns the full lifecycle of your webapps. Give it a context doc with your deploy target, stack preferences, and the practices below. This keeps every project consistent and saves you from re-explaining the same things every session.
+
+### Practices to bake into your agent
+
+- **Use latest stable versions.** Web search to verify current versions of languages, frameworks, and base images before scaffolding.
+- **Dockerize from the start.** Every app gets a `Dockerfile` and `docker-compose.yml`. No exceptions.
+- **Session resume files.** Each project gets a `SESSION-RESUME.md` with stack, status, decisions, and deploy info so your agent can pick up where it left off.
+- **Never deploy secrets to git.** API keys, tokens, and `.env` files stay on the server. Use environment variables in your compose file.
+- **Deploy via git pull, not file copy.** Push to GitHub, pull on the server, rebuild. Keeps the server's working tree clean.
+- **Security baselines.** CSRF protection, rate limiting, input validation. Your agent should enforce these by default.
+- **Health checks.** Add a `/healthz` endpoint and a Docker `HEALTHCHECK` so monitoring can verify the app is running.
+
+### Ship it
+
+- **Start simple.** Pick a problem you actually have.
 - **Example projects:**
   - [Phantom Paste](https://github.com/pete-builds/phantom-paste): zero-knowledge ephemeral pastebin (Go + SQLite + vanilla JS)
   - [Model Arena](https://github.com/pete-builds/open-model-arena): blind AI model comparison with ELO leaderboard (Python/FastAPI + SQLite)
@@ -299,6 +316,6 @@ Terms you'll run into as you work through this playbook.
 
 ## About
 
-Built and maintained by [pete-builds](https://github.com/pete-builds). This playbook reflects a real stack running in production on a home network, not a theoretical setup guide. It's a living document. 
+Built and maintained by [pete-builds](https://github.com/pete-builds). This playbook reflects a real stack running in production on a home network, not a theoretical setup guide. It's a living document. Do your own research, dig into the docs, and make it yours.
 
 Suggestions, corrections, and "you're missing X" welcome via [Issues](../../issues).
