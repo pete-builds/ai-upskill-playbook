@@ -2,11 +2,11 @@
 
 This is my AI upskill origin story, one layer at a time.
 
-I didn't follow a guide or take a course. I just started building, hit walls, figured things out, and kept going. The order below isn't the order I actually did everything. It's the order I'd recommend now that I know what I know. Each section is a real layer in my stack today, and I'll share what I learned along the way.
+I learn best by doing. Over the past few months I've been building a self-hosted AI stack from scratch, one service at a time, learning how the pieces connect along the way. Each section below is a real layer in that stack today.
 
-This is not comprehensive. I feel like I'm just getting started and there's so much more to learn. This is everything I've set up so far, and I'll keep updating it as I go. If you've been down this path before, I'd love to hear what I've missed.
+There are many ways to upskill in AI. This is just the path I took. Whether you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job, this can help get you going. This guide is probably best for someone with an IT background, but if you're curious and willing to learn, anyone can do it.
 
-I'm hoping it helps others who are curious and trying to upskill in AI. Maybe you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job. This can help get you going so you're speaking the language and immersing yourself in the AI stack.
+This is not comprehensive. I'm just getting started and there's so much more to learn. This is everything I've set up so far, and I'll keep updating it as I go. If you've been down this path before, I'd love to hear what I've missed.
 
 ### What you'll learn
 
