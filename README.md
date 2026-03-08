@@ -4,13 +4,15 @@ This is my AI upskill origin story, one layer at a time.
 
 I didn't follow a guide or take a course. I just started building, hit walls, figured things out, and kept going. The order below isn't the order I actually did everything. It's the order I'd recommend now that I know what I know. Each section is a real layer in my stack today, and I'll share what I learned along the way.
 
-I've learned a lot and I'm hoping it helps others who are curious and trying to upskill in AI. Maybe you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job. This can help get you going so you're speaking the language and immersing yourself in the AI stack.
+This is not comprehensive. I feel like I'm just getting started and there's so much more to learn. This is everything I've set up so far, and I'll keep updating it as I go. If you've been down this path before, I'd love to hear what I've missed.
+
+I'm hoping it helps others who are curious and trying to upskill in AI. Maybe you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job. This can help get you going so you're speaking the language and immersing yourself in the AI stack.
 
 ### What you'll learn
 
 By the end of this playbook, you'll understand how to:
 
-- Set up an AI-native development environment with an AI pair programmer
+- Set up an AI-native development environment with an AI coding assistant
 - Run always-on infrastructure and containers on your own hardware
 - Deploy and manage local LLMs on consumer hardware
 - Route multiple AI providers through a single API gateway
@@ -53,7 +55,7 @@ By the end of this playbook, you'll understand how to:
 
 | # | Layer | What | Why |
 |---|-------|------|-----|
-| 12 | [Build a Web App](#12-build-a-web-app) | Ship a real project with your AI pair programmer | Prove the stack works by building something |
+| 12 | [Build a Web App](#12-build-a-web-app) | Ship a real project with your AI coding assistant | Prove the stack works by building something |
 
 ### Keep It Running
 
@@ -67,13 +69,13 @@ By the end of this playbook, you'll understand how to:
 
 You don't need all thirteen layers. Start with 1-3 and you'll already be ahead of most people. Each layer is optional. Skip what doesn't interest you, come back to it later.
 
-The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a Linux box + [Docker](https://docs.docker.com/engine/install/)**. Once you have those three, building the rest is just conversations with your AI pair programmer.
+The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a Linux box + [Docker](https://docs.docker.com/engine/install/)**. Once you have those three, building the rest is just conversations with your AI coding assistant.
 
 ---
 
 ## 1. Claude Code
 
-[Claude Code](https://code.claude.com/docs/en/overview) is an AI coding assistant that runs in your terminal. It can read your files, write code, run commands, and iterate on problems with you. This is layer one because it accelerates everything that comes after. You're not just following tutorials anymore. You have a pair programmer that knows the docs.
+[Claude Code](https://code.claude.com/docs/en/overview) is an AI coding assistant that runs in your terminal. It can read your files, write code, run commands, and iterate on problems with you. This is layer one because it accelerates everything that comes after. You're not just following tutorials anymore. You have a coding assistant that knows the docs.
 
 - Get the [$20/month Claude Pro subscription](https://claude.ai/pricing). I know, nobody wants another subscription. Don't let that be the thing that stops you. The value you get back in productivity is not even close. This is the highest-leverage $20 you'll spend.
 - Install [Claude Code](https://code.claude.com/docs/en/overview) (npm, requires Node.js)
@@ -90,7 +92,7 @@ The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a
 - Build [custom skills](https://code.claude.com/docs/en/skills) (slash commands) for repeatable workflows
 - Create [custom subagents](https://code.claude.com/docs/en/sub-agents) to delegate specialized tasks
 
-**Key concept:** Claude Code isn't autocomplete. It's a pair programmer that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools. Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible.
+**Key concept:** Claude Code isn't autocomplete. It's a coding assistant that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools. Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible.
 
 **Security note:** Claude Code can run commands on your machine. Be aware of [prompt injection](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) risks: malicious content in files, repos, or web pages could try to trick Claude into running harmful commands. Review what Claude is doing before approving tool calls, especially with unfamiliar code. Never blindly consume unofficial code from repos you haven't reviewed, including the ones linked in this playbook. Read it first.
 
@@ -266,6 +268,6 @@ Once you have services running, you need to keep them running and make them acce
 
 ## About
 
-Built and maintained by [pete-builds](https://github.com/pete-builds). This playbook reflects a real stack running in production on a home network, not a theoretical setup guide.
+Built and maintained by [pete-builds](https://github.com/pete-builds). This playbook reflects a real stack running in production on a home network, not a theoretical setup guide. It's a living document. Do your own research, dig into the docs, and make it yours.
 
-Suggestions and questions welcome via [Issues](../../issues).
+Suggestions, corrections, and "you're missing X" welcome via [Issues](../../issues).
