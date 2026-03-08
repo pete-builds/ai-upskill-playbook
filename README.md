@@ -2,7 +2,9 @@
 
 One person's journey building a self-hosted AI stack from scratch, one layer at a time.
 
-This is my origin story. Not a tutorial, not a best practices guide. Just the timeline of how I actually learned this stuff, what I built, and the order I'd do it again if I started over. Some of these layers happened in a different order the first time around, but this is how I'd approach it now. I've learned a lot along the way and I'm hoping it helps others who are curious.
+This is my origin story. I didn't follow a guide or take a course. I just started building, hit walls, figured things out, and kept going. The order below isn't the order I actually did everything. It's the order I'd recommend now that I know what I know. Each section is a real layer in my stack today, and I'll share what I learned along the way.
+
+Not saying this is the right way or the wrong way. But I've learned a lot and I'm hoping it helps others who are curious and trying to upskill in AI.
 
 ---
 
