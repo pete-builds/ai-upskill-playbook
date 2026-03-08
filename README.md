@@ -117,6 +117,19 @@ workspace/
 
 Each folder can have its own `CLAUDE.md` with context specific to that area. When Claude works in a folder, it picks up those instructions automatically. The context lives with the work itself.
 
+### Managing token usage
+
+Tokens cost money and context windows fill up fast. A lot of what's in this playbook helps reduce burn without thinking about it.
+
+- **Use the right model.** Sonnet for everyday tasks, Opus only when you need deep thinking. This alone cuts costs significantly.
+- **Agentic workflows** isolate context. Each agent only reads what it needs instead of loading your entire workspace into one conversation.
+- **MCP servers** let Claude call APIs directly instead of you pasting terminal output back and forth. Fewer tokens in, faster results out.
+- **Workspace organization** means Claude finds what it needs quickly instead of searching through unrelated files.
+- **Session resume files** give your agents a summary to pick up from instead of re-explaining the full history every session.
+- **Subagents** get their own context windows, so research and parallel tasks don't eat into your main conversation.
+- **`/compact`** summarizes your conversation in place when context gets heavy. **`/clear`** starts fresh.
+- **Plan mode** (`shift+tab`) lets Claude research before writing, so you don't burn tokens on code that misses the mark.
+
 **Key concept:** Claude Code isn't autocomplete. It's a coding assistant that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools. Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible.
 
 **Security note:** Claude Code can run commands on your machine. Be aware of [prompt injection](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) risks: malicious content in files, repos, or web pages could try to trick Claude into running harmful commands. Review what Claude is doing before approving tool calls, especially with unfamiliar code. Never blindly consume unofficial code from repos you haven't reviewed, including the ones linked in this playbook. Read it first.
