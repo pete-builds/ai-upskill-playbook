@@ -6,6 +6,19 @@ This is my origin story. I didn't follow a guide or take a course. I just starte
 
 Not saying this is the right way or the wrong way. But I've learned a lot and I'm hoping it helps others who are curious and trying to upskill in AI. Maybe you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job. This can help get you going so you're speaking the language and immersing yourself in the AI stack.
 
+### What you'll learn
+
+By the end of this playbook, you'll understand how to:
+
+- Set up an AI-native development environment with an AI pair programmer
+- Run always-on infrastructure and containers on your own hardware
+- Deploy and manage local LLMs on consumer hardware
+- Route multiple AI providers through a single API gateway
+- Build agentic workflows that delegate tasks to specialized AI agents
+- Give your AI tools direct access to services via MCP servers
+- Automate workflows connecting AI models, APIs, and databases
+- Ship real web applications and monitor your entire stack
+
 ---
 
 ## The Stack
@@ -60,7 +73,7 @@ Not saying this is the right way or the wrong way. But I've learned a lot and I'
 - Learn the core loop: describe what you want, review what it does, iterate
 - **Use Sonnet for everyday tasks** (quick edits, file searches, simple scripts). **Switch to Opus** (`/model opus`) for complex code, architecture decisions, debugging, and writing. Opus thinks deeper but costs more context.
 - Learn [plan mode](https://code.claude.com/docs/en/common-workflows#use-plan-mode-for-safe-code-analysis) (`shift+tab`): Claude researches your codebase and proposes a plan before writing any code. Great for understanding unfamiliar projects or planning big changes.
-- Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/github) for version control and repo management from day one
+- Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/github/github-mcp-server) for version control and repo management from day one
 - Customize your [statusline](https://code.claude.com/docs/en/interactive-mode#status-bar) (context usage, model, git status, session metrics). I built a [custom one](https://github.com/pete-builds/claude-code-statusline) with weather, billing tier, and battery.
 - Create a [`CLAUDE.md`](https://code.claude.com/docs/en/memory) project file for persistent instructions
 - Use `/init` to scaffold new projects
@@ -144,7 +157,7 @@ This is where Claude Code goes from "smart assistant" to "team of specialists." 
 - **Deploy as containers** on your Linux box, register with `claude mcp add`
 - **Example servers you can build:**
   - Infrastructure management ([Portainer MCP](https://github.com/portainer/portainer-mcp))
-  - [GitHub MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/github) (PRs, issues, code search)
+  - [GitHub MCP](https://github.com/github/github-mcp-server) (PRs, issues, code search)
   - Workflow execution (n8n)
   - Home automation, DNS, network tools
   - Calendar, email, and other integrations
