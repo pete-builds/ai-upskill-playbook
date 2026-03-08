@@ -299,6 +299,6 @@ Terms you'll run into as you work through this playbook.
 
 ## About
 
-Built and maintained by [pete-builds](https://github.com/pete-builds). This playbook reflects a real stack running in production on a home network, not a theoretical setup guide. It's a living document. Do your own research, dig into the docs, and make it yours.
+Built and maintained by [pete-builds](https://github.com/pete-builds). This playbook reflects a real stack running in production on a home network, not a theoretical setup guide. It's a living document. 
 
 Suggestions, corrections, and "you're missing X" welcome via [Issues](../../issues).
