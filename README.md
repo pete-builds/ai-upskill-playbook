@@ -54,9 +54,12 @@ Not saying this is the right way or the wrong way. But I've learned a lot and I'
 
 [Claude Code](https://code.claude.com/docs/en/overview) is an AI coding assistant that runs in your terminal. It can read your files, write code, run commands, and iterate on problems with you. This is layer one because it accelerates everything that comes after. You're not just following tutorials anymore. You have a pair programmer that knows the docs.
 
+- Get the [$20/month Claude Pro subscription](https://claude.ai/pricing). I know, nobody wants another subscription. Don't let that be the thing that stops you. The value you get back in productivity is not even close. This is the highest-leverage $20 you'll spend.
 - Install [Claude Code](https://code.claude.com/docs/en/overview) (npm, requires Node.js)
 - Connect to Anthropic API (direct key or API gateway)
 - Learn the core loop: describe what you want, review what it does, iterate
+- **Use Sonnet for everyday tasks** (quick edits, file searches, simple scripts). **Switch to Opus** (`/model opus`) for complex code, architecture decisions, debugging, and writing. Opus thinks deeper but costs more context.
+- Learn [plan mode](https://code.claude.com/docs/en/common-workflows#use-plan-mode-for-safe-code-analysis) (`shift+tab`): Claude researches your codebase and proposes a plan before writing any code. Great for understanding unfamiliar projects or planning big changes.
 - Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/modelcontextprotocol/servers/tree/main/src/github) for version control and repo management from day one
 - Customize your [statusline](https://code.claude.com/docs/en/interactive-mode#status-bar) (context usage, model, git status, session metrics). I built a [custom one](https://github.com/pete-builds/claude-code-statusline) with weather, billing tier, and battery.
 - Create a [`CLAUDE.md`](https://code.claude.com/docs/en/memory) project file for persistent instructions
@@ -68,6 +71,8 @@ Not saying this is the right way or the wrong way. But I've learned a lot and I'
 
 **Key concept:** Claude Code isn't autocomplete. It's a pair programmer that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools. Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible.
 
+**Security note:** Claude Code can run commands on your machine. Be aware of [prompt injection](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) risks: malicious content in files, repos, or web pages could try to trick Claude into running harmful commands. Review what Claude is doing before approving tool calls, especially with unfamiliar code. Never blindly consume unofficial code from repos you haven't reviewed, including the ones linked in this playbook. Read it first.
+
 ## 2. Linux Box
 
 You need one computer that stays on. It doesn't need to be powerful. A used mini PC, an old laptop, or a NUC will do. Install [Ubuntu Server](https://ubuntu.com/download/server) or Debian.
@@ -77,6 +82,7 @@ You need one computer that stays on. It doesn't need to be powerful. A used mini
 - SSH access configured (key-based, no passwords)
 - Static IP or DHCP reservation on your router
 - [Tailscale](https://tailscale.com/) for remote access without port forwarding
+- Give Claude Code SSH access to your Linux box (key-based). This lets Claude deploy containers, check logs, and manage services directly from your laptop. It's a game changer.
 - This is your foundation. Everything else is a container on this box.
 
 ## 3. Docker + Portainer
