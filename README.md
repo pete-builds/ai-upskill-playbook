@@ -94,6 +94,29 @@ The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a
 - Build [custom skills](https://code.claude.com/docs/en/skills) (slash commands) for repeatable workflows
 - Create [custom subagents](https://code.claude.com/docs/en/sub-agents) to delegate specialized tasks
 
+### Organize your workspace
+
+Claude Code gets its value from proximity to files. Structure your workspace so the right context is always nearby.
+
+```
+workspace/
+├── CLAUDE.md              # persistent instructions, agent routing, rules
+├── Work/
+│   ├── Projects/
+│   │   ├── project-a/
+│   │   └── project-b/
+│   ├── Meeting-Notes/
+│   ├── Issues/
+│   ├── Documentation/
+│   └── Scripts/
+└── Personal/
+    ├── Homelab/
+    ├── Side-Projects/
+    └── Notes/
+```
+
+Each folder can have its own `CLAUDE.md` with context specific to that area. When Claude works in a folder, it picks up those instructions automatically. The context lives with the work itself.
+
 **Key concept:** Claude Code isn't autocomplete. It's a coding assistant that can SSH into servers, deploy containers, write tests, and debug production issues. You just need to give it the right context and tools. Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible.
 
 **Security note:** Claude Code can run commands on your machine. Be aware of [prompt injection](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) risks: malicious content in files, repos, or web pages could try to trick Claude into running harmful commands. Review what Claude is doing before approving tool calls, especially with unfamiliar code. Never blindly consume unofficial code from repos you haven't reviewed, including the ones linked in this playbook. Read it first.
