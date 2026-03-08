@@ -1,10 +1,10 @@
 # AI Upskill Playbook
 
-One person's journey building a self-hosted AI stack from scratch, one layer at a time.
+This is my AI upskill origin story, one layer at a time.
 
-This is my origin story. I didn't follow a guide or take a course. I just started building, hit walls, figured things out, and kept going. The order below isn't the order I actually did everything. It's the order I'd recommend now that I know what I know. Each section is a real layer in my stack today, and I'll share what I learned along the way.
+I didn't follow a guide or take a course. I just started building, hit walls, figured things out, and kept going. The order below isn't the order I actually did everything. It's the order I'd recommend now that I know what I know. Each section is a real layer in my stack today, and I'll share what I learned along the way.
 
-Not saying this is the right way or the wrong way. But I've learned a lot and I'm hoping it helps others who are curious and trying to upskill in AI. Maybe you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job. This can help get you going so you're speaking the language and immersing yourself in the AI stack.
+I've learned a lot and I'm hoping it helps others who are curious and trying to upskill in AI. Maybe you're looking to break into an emerging field, trying to support your business, or trying to do better in your current job. This can help get you going so you're speaking the language and immersing yourself in the AI stack.
 
 ### What you'll learn
 
@@ -60,6 +60,14 @@ By the end of this playbook, you'll understand how to:
 | # | Layer | What | Why |
 |---|-------|------|-----|
 | 13 | [Monitoring + Infrastructure](#13-monitoring--infrastructure) | Uptime Kuma, Watchtower, Caddy, Tailscale | Keep it all running and reachable |
+
+---
+
+## Getting Started
+
+You don't need all thirteen layers. Start with 1-3 and you'll already be ahead of most people. Each layer is optional. Skip what doesn't interest you, come back to it later.
+
+The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a Linux box + [Docker](https://docs.docker.com/engine/install/)**. Once you have those three, building the rest is just conversations with your AI pair programmer.
 
 ---
 
@@ -253,14 +261,6 @@ Once you have services running, you need to keep them running and make them acce
 - **[Caddy](https://caddyserver.com/):** reverse proxy with automatic HTTPS (TLS certificates)
 - **[Tailscale](https://tailscale.com/):** mesh VPN for secure remote access without port forwarding
 - **[Homepage](https://github.com/gethomepage/homepage)/[Homarr](https://github.com/ajnart/homarr):** dashboard to see everything at a glance
-
----
-
-## Getting Started
-
-You don't need all thirteen layers. Start with 1-3 and you'll already be ahead of most people. Each layer is optional. Skip what doesn't interest you, come back to it later.
-
-The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a Linux box + [Docker](https://docs.docker.com/engine/install/)**. Once you have those three, building the rest is just conversations with your AI pair programmer.
 
 ---
 
