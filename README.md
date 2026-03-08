@@ -1,14 +1,12 @@
 # AI Upskill Playbook
 
-**Build a self-hosted AI stack from scratch, one layer at a time.**
+**What I learned building a self-hosted AI stack from scratch, one layer at a time.**
 
-Over the past few months I've been building a self‑hosted AI stack from the ground up, including Claude Code, agentic workflows, MCP servers, Docker, Ollama, LiteLLM, n8n, and more. Every layer is something I'm actually running on my home network today.
+Over the past few months I've been building a self-hosted AI stack from scratch, one service at a time, trying to understand how the pieces connect. Each section below represents a real layer in that stack today.
 
-I wrote everything down as a step‑by‑step playbook. Everything in Part I works from your laptop, no server required. Part II gets into self‑hosted infrastructure and always‑on services.
+There are many ways to upskill in AI. This is simply the path I took. If you're trying to break into the field, support a business, or level up in your current role, this might give you a useful starting point. It will probably feel most natural if you come from an IT background, but anyone curious and willing to learn can follow along.
 
-This is not a comprehensive guide. Think of each bullet point as a starting point or a prompt you can give directly to Claude Code. Treat Claude Code as your trainer and learn by building inside your own environment.
-
-My goal is to share a practical learning path for people who want to upskill in applied AI, whether you're supporting a team, exploring new tools, or leveling up your current role. I'll keep expanding this as I continue to learn. Feedback and suggestions are welcome.
+This isn't meant to be comprehensive. I'm still learning and there's a lot more to explore. What you see here is everything I've built so far, and I'll keep updating it as the stack evolves.
 
 ### What you'll end up with
 
