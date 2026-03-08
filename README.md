@@ -36,11 +36,11 @@ You (laptop)
 By the end of this playbook, you'll understand how to:
 
 - Set up an AI-native development environment with an AI coding assistant
+- Build agentic workflows that delegate tasks to specialized AI agents
+- Give your AI tools direct access to services via MCP servers
 - Run always-on infrastructure and containers on your own hardware
 - Deploy and manage local LLMs on consumer hardware
 - Route multiple AI providers through a single API gateway
-- Build agentic workflows that delegate tasks to specialized AI agents
-- Give your AI tools direct access to services via MCP servers
 - Automate workflows connecting AI models, APIs, and databases
 - Ship real web applications and monitor your entire stack
 
@@ -48,43 +48,43 @@ By the end of this playbook, you'll understand how to:
 
 ## The Stack
 
-### Foundation
+### Part 1: Get Going
+
+Everything in this section runs on your laptop. No server, no hardware, no infrastructure. Just install Claude Code and start building.
 
 | # | Layer | What | Why |
 |---|-------|------|-----|
 | 1 | [Claude Code](#1-claude-code) | AI-powered CLI dev environment | Your building speed multiplier. Everything else gets easier with this. |
-| 2 | [Linux Box](#2-linux-box) | A dedicated machine running Linux | Everything else runs on this |
-| 3 | [Docker + Portainer](#3-docker--portainer) | Containers and a management UI | Install anything without breaking everything |
+| 2 | [Agentic Workflows](#2-agentic-workflows) | Specialized AI agents with routing and memory | Stop prompting, start delegating |
+| 3 | [MCP Servers](#3-mcp-servers) | Model Context Protocol servers | Give Claude hands to control your services |
 
-### AI Stack
+### Part 2: Self-Hosted Infrastructure
 
-| # | Layer | What | Why |
-|---|-------|------|-----|
-| 4 | [Agentic Workflows](#4-agentic-workflows) | Specialized AI agents with routing and memory | Stop prompting, start delegating |
-| 5 | [MCP Servers](#5-mcp-servers) | Model Context Protocol servers | Give Claude hands to control your stack |
-| 6 | [LiteLLM](#6-litellm) | Unified API gateway for LLMs | One endpoint, any model |
-| 7 | [Local Models](#7-local-models) | Ollama on a Mac Mini (or any GPU box) | Run models with zero API costs |
-| 8 | [SearXNG](#8-searxng) | Private metasearch engine | Give your AI tools access to the web |
-| 9 | [n8n](#9-n8n) | Workflow automation platform | Connect everything to everything |
-
-### Interfaces
+This is where you go deeper. A dedicated Linux box running Docker gives you a platform to self-host AI services, run local models, and own your entire stack. It's not required to get started, but it's where the real power comes from.
 
 | # | Layer | What | Why |
 |---|-------|------|-----|
-| 10 | [Open WebUI](#10-open-webui) | Chat interface for local + remote models | A front door for everyone else |
-| 11 | [Perplexica](#11-perplexica) | AI-powered search (self-hosted Perplexity) | Deep research without subscriptions |
+| 4 | [Linux Box](#4-linux-box) | A dedicated machine running Linux | Your always-on platform for everything below |
+| 5 | [Docker + Portainer](#5-docker--portainer) | Containers and a management UI | Install anything without breaking everything |
+| 6 | [Self-Hosted MCP Servers](#6-self-hosted-mcp-servers) | Build your own MCP tools | Give Claude direct access to your homelab services |
+| 7 | [LiteLLM](#7-litellm) | Unified API gateway for LLMs | One endpoint, any model |
+| 8 | [Local Models](#8-local-models) | Ollama on a Mac Mini (or any GPU box) | Run models with zero API costs |
+| 9 | [SearXNG](#9-searxng) | Private metasearch engine | Give your AI tools access to the web |
+| 10 | [n8n](#10-n8n) | Workflow automation platform | Connect everything to everything |
+| 11 | [Open WebUI](#11-open-webui) | Chat interface for local + remote models | A front door for everyone else |
+| 12 | [Perplexica](#12-perplexica) | AI-powered search (self-hosted Perplexity) | Deep research without subscriptions |
 
 ### Ship Something
 
 | # | Layer | What | Why |
 |---|-------|------|-----|
-| 12 | [Build a Web App](#12-build-a-web-app) | Ship a real project with your AI coding assistant | Prove the stack works by building something |
+| 13 | [Build a Web App](#13-build-a-web-app) | Ship a real project with your AI coding assistant | Prove the stack works by building something |
 
 ### Keep It Running
 
 | # | Layer | What | Why |
 |---|-------|------|-----|
-| 13 | [Monitoring + Infrastructure](#13-monitoring--infrastructure) | Uptime Kuma, Watchtower, Caddy, Tailscale | Keep it all running and reachable |
+| 14 | [Monitoring + Infrastructure](#14-monitoring--infrastructure) | Uptime Kuma, Watchtower, Caddy, Tailscale | Keep it all running and reachable |
 
 New to some of these terms? See the [Vocabulary](#vocabulary) at the bottom.
 
@@ -92,9 +92,9 @@ New to some of these terms? See the [Vocabulary](#vocabulary) at the bottom.
 
 ## Getting Started
 
-You don't need all thirteen layers. Start with 1-3 and you'll already be ahead of most people. Each layer is optional. Skip what doesn't interest you, come back to it later.
+You don't need a server to get started. Layers 1-3 run entirely on your laptop and will already change how you work. Once you're ready to go deeper, Part 2 walks you through setting up your own infrastructure.
 
-The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + a Linux box + [Docker](https://docs.docker.com/engine/install/)**. Once you have those three, building the rest is just conversations with your AI coding assistant.
+The real unlock is **[Claude Code](https://code.claude.com/docs/en/overview) + agents + [MCP servers](https://code.claude.com/docs/en/mcp)**. Once you have those three, you're not just using AI. You're building with it.
 
 ---
 
@@ -157,33 +157,9 @@ Tokens cost money and context windows fill up fast. A lot of what's in this play
 
 **Security note:** Claude Code can run commands on your machine. Be aware of [prompt injection](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) risks: malicious content in files, repos, or web pages could try to trick Claude into running harmful commands. Review what Claude is doing before approving tool calls, especially with unfamiliar code. Never blindly consume unofficial code from repos you haven't reviewed, including the ones linked in this playbook. Read it first.
 
-## 2. Linux Box
+## 2. Agentic Workflows
 
-You need one computer that stays on. It doesn't need to be powerful. A used mini PC, an old laptop, or a NUC will do. Install [Ubuntu Server](https://ubuntu.com/download/server) or Debian.
-
-- Any x86 machine with 8GB RAM and a 256GB SSD
-- Ubuntu Server or Debian (headless, no desktop environment needed)
-- SSH access configured (key-based, no passwords)
-- Static IP or DHCP reservation on your router
-- [Tailscale](https://tailscale.com/) for remote access without port forwarding
-- Give Claude Code SSH access to your Linux box (key-based). This lets Claude deploy containers, check logs, and manage services directly from your laptop. It's a game changer.
-- This is your foundation. Everything else is a container on this box.
-
-## 3. Docker + Portainer
-
-[Docker](https://docs.docker.com/engine/install/) lets you run applications in isolated containers. [Portainer](https://www.portainer.io/) gives you a web UI to manage them instead of memorizing CLI commands.
-
-- Install [Docker Engine](https://docs.docker.com/engine/install/) (not Docker Desktop)
-- Install [Portainer CE](https://docs.portainer.io/start/install-ce) as your first container
-- Learn [docker-compose](https://docs.docker.com/compose/): one YAML file per service
-- Understand volumes (persistent data) vs bind mounts
-- Understand networking: bridge, host, and container DNS
-- [Watchtower](https://github.com/containrrr/watchtower) for automatic image updates (optional, be careful in production)
-- Once you have these two, installing new services goes from "follow a 47-step guide" to "paste a docker-compose file and click deploy"
-
-## 4. Agentic Workflows
-
-This is where Claude Code goes from "smart assistant" to "team of specialists." Instead of one conversation handling everything, you build purpose-built agents that each own a domain. See the official docs on [custom subagents](https://code.claude.com/docs/en/sub-agents) and [skills](https://code.claude.com/docs/en/skills).
+This is where Claude Code goes from "smart assistant" to "team of specialists." Instead of one conversation handling everything, you build purpose-built agents that each own a domain. No server needed. This all runs on your laptop. See the official docs on [custom subagents](https://code.claude.com/docs/en/sub-agents) and [skills](https://code.claude.com/docs/en/skills).
 
 - **What is an agent?** A [skill](https://code.claude.com/docs/en/skills) (slash command) that spawns a [subagent](https://code.claude.com/docs/en/sub-agents) with its own persona, context docs, tools, and SOPs
 - **Why agents?** Context isolation. Each agent reads only what it needs, so it doesn't get confused by unrelated information.
@@ -218,24 +194,64 @@ This is where Claude Code goes from "smart assistant" to "team of specialists." 
 - **Verify before done:** run it, check the output, confirm it works
 - **Self-improvement loop:** log corrections in a lessons file, review at session start
 
-## 5. MCP Servers
+## 3. MCP Servers
 
-[Model Context Protocol (MCP)](https://code.claude.com/docs/en/mcp) servers give Claude Code direct access to your services. Instead of copy-pasting between terminals, you just ask Claude to do it and it calls the API directly. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for pre-built servers.
+[Model Context Protocol (MCP)](https://code.claude.com/docs/en/mcp) servers give Claude Code direct access to external services. Instead of copy-pasting between terminals, you just ask Claude to do it and it calls the API directly.
 
-- **What is MCP?** A protocol that lets AI assistants call external tools via structured API
-- **Transports:** SSE (network, accessible from any machine) vs stdio (local binary)
+You don't need a server to use MCP. Many MCP servers are cloud-hosted or run locally on your laptop. Start with these:
+
+- **[GitHub MCP](https://github.com/github/github-mcp-server):** PRs, issues, code search, repo management
+- **[Google Calendar](https://console.cloud.google.com/):** schedule, check availability, create events
+- **[Gmail](https://console.cloud.google.com/):** read, search, draft emails
+- **[Anthropic's built-in connectors](https://code.claude.com/docs/en/mcp):** many integrations available out of the box
+
+Each MCP server = a set of tools Claude can call on demand. Register them with `claude mcp add` and they're available in every conversation. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for more pre-built servers.
+
+**What is MCP?** A protocol that lets AI assistants call external tools via structured API. Once you have a Linux box (Part 2), you can also [build and self-host your own](#6-self-hosted-mcp-servers).
+
+---
+
+## 4. Linux Box
+
+Ready to go deeper? Everything from here on runs on dedicated hardware. A Linux box gives you an always-on platform to self-host AI services, run containers, and own your stack instead of renting it.
+
+You need one computer that stays on. It doesn't need to be powerful. A used mini PC, an old laptop, or a NUC will do. Install [Ubuntu Server](https://ubuntu.com/download/server) or Debian.
+
+- Any x86 machine with 8GB RAM and a 256GB SSD
+- Ubuntu Server or Debian (headless, no desktop environment needed)
+- SSH access configured (key-based, no passwords)
+- Static IP or DHCP reservation on your router
+- [Tailscale](https://tailscale.com/) for remote access without port forwarding
+- Give Claude Code SSH access to your Linux box (key-based). This lets Claude deploy containers, check logs, and manage services directly from your laptop. It's a game changer.
+- This is your foundation. Everything else is a container on this box.
+
+## 5. Docker + Portainer
+
+[Docker](https://docs.docker.com/engine/install/) lets you run applications in isolated containers. [Portainer](https://www.portainer.io/) gives you a web UI to manage them instead of memorizing CLI commands.
+
+- Install [Docker Engine](https://docs.docker.com/engine/install/) (not Docker Desktop)
+- Install [Portainer CE](https://docs.portainer.io/start/install-ce) as your first container
+- Learn [docker-compose](https://docs.docker.com/compose/): one YAML file per service
+- Understand volumes (persistent data) vs bind mounts
+- Understand networking: bridge, host, and container DNS
+- [Watchtower](https://github.com/containrrr/watchtower) for automatic image updates (optional, be careful in production)
+- Once you have these two, installing new services goes from "follow a 47-step guide" to "paste a docker-compose file and click deploy"
+
+## 6. Self-Hosted MCP Servers
+
+Once you have a Linux box and Docker, you can build your own MCP servers and give Claude Code direct access to your homelab services. This is where MCP goes from "connect to cloud tools" to "control your entire infrastructure."
+
 - **Build pattern:** Python + [FastMCP](https://github.com/jlowin/fastmcp) + httpx + Docker
+- **Transports:** SSE (network, accessible from any machine) vs stdio (local binary)
 - **Deploy as containers** on your Linux box, register with `claude mcp add`
 - **Example servers you can build:**
   - Infrastructure management ([Portainer MCP](https://github.com/portainer/portainer-mcp))
-  - [GitHub MCP](https://github.com/github/github-mcp-server) (PRs, issues, code search)
   - Workflow execution (n8n)
   - Home automation, DNS, network tools
-  - Calendar, email, and other integrations
-- Each MCP server = a set of tools Claude can call on demand
+  - Media management, monitoring, and more
 - SSE transport recommended. One server, accessible from any machine on your network.
 
-## 6. LiteLLM
+## 7. LiteLLM
 
 [LiteLLM](https://github.com/BerriAI/litellm) sits between your apps and AI model providers. Point everything at one URL, and LiteLLM routes to OpenAI, Anthropic, local models, or whatever you configure.
 
@@ -246,7 +262,7 @@ This is where Claude Code goes from "smart assistant" to "team of specialists." 
 - Load balancing and fallback between providers
 - Set up your API connection once. Every tool downstream just talks to LiteLLM.
 
-## 7. Local Models
+## 8. Local Models
 
 Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A Mac Mini with Apple Silicon is surprisingly capable, but any machine with a decent GPU works.
 
@@ -258,7 +274,7 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 - Won't replace Claude for complex work, but perfect for bulk tasks, embeddings, and experimentation
 - Run coding assistants, chat models, and embedding models side by side
 
-## 8. SearXNG
+## 9. SearXNG
 
 [SearXNG](https://github.com/searxng/searxng) is a private metasearch engine that aggregates results from Google, Bing, DuckDuckGo, and dozens of other sources without tracking you.
 
@@ -269,7 +285,7 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 - Gives your AI tools and workflows a way to search the web
 - Privacy-first: no tracking, no profiling, no ads
 
-## 9. n8n
+## 10. n8n
 
 [n8n](https://n8n.io/) is a workflow automation platform. Think Zapier, but self-hosted and free. Drag and drop nodes to connect APIs, databases, AI models, and triggers.
 
@@ -282,7 +298,7 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 - Connect to LiteLLM, Ollama, SearXNG, and everything else in your stack
 - This is where your stack starts doing things on its own
 
-## 10. Open WebUI
+## 11. Open WebUI
 
 [Open WebUI](https://github.com/open-webui/open-webui) gives you a ChatGPT-style interface for all your models, local and remote. Point it at Ollama and LiteLLM and everyone in your house can use AI without a subscription.
 
@@ -293,7 +309,7 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 - Document upload and RAG (retrieval-augmented generation)
 - The "front door" layer. Everything you built powers what feels like a simple chat app.
 
-## 11. Perplexica
+## 12. Perplexica
 
 [Perplexica](https://github.com/ItzCrazyKns/Perplexica) is a self-hosted alternative to Perplexity AI. It uses SearXNG for web search and your local/cloud models for synthesis.
 
@@ -303,13 +319,13 @@ Run open-source LLMs on your own hardware with [Ollama](https://ollama.com/). A 
 - Multiple search modes: general, academic, writing, Wolfram Alpha
 - Self-hosted. Your searches stay on your network.
 
-## 12. Build a Web App
+## 13. Build a Web App
 
 The best way to prove your stack works is to build something real with it. Claude Code + Docker + your Linux box = you can go from idea to deployed webapp in one session.
 
 ### Build an agent first
 
-Before you start coding, build a dedicated agent (see [Agentic Workflows](#4-agentic-workflows)) that owns the full lifecycle of your webapps. Give it a context doc with your deploy target, stack preferences, and the practices below. This keeps every project consistent and saves you from re-explaining the same things every session.
+Before you start coding, build a dedicated agent (see [Agentic Workflows](#2-agentic-workflows)) that owns the full lifecycle of your webapps. Give it a context doc with your deploy target, stack preferences, and the practices below. This keeps every project consistent and saves you from re-explaining the same things every session.
 
 ### Practices to bake into your agent
 
@@ -332,7 +348,7 @@ Before you start coding, build a dedicated agent (see [Agentic Workflows](#4-age
 - **[Tailscale Funnel](https://tailscale.com/kb/1223/funnel)** for sharing without exposing your network
 - You'll learn more building one real thing than reading ten tutorials
 
-## 13. Monitoring + Infrastructure
+## 14. Monitoring + Infrastructure
 
 Once you have services running, you need to keep them running and make them accessible.
 
