@@ -1,8 +1,8 @@
 # AI Upskill Playbook
 
-A practical guide to building a self-hosted AI stack from scratch, one layer at a time.
+One person's journey building a self-hosted AI stack from scratch, one layer at a time.
 
-This isn't a tutorial. It's the map I wish I had when I started. Each layer builds on the last, and none of it requires a cloud subscription or a CS degree. Just a Linux box and some curiosity.
+This is my origin story. Not a tutorial, not a best practices guide. Just the timeline of how I actually learned this stuff, what I built, and the order I'd do it again if I started over. Some of these layers happened in a different order the first time around, but this is how I'd approach it now. I've learned a lot along the way and I'm hoping it helps others who are curious.
 
 ---
 
