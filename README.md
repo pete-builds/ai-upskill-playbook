@@ -71,6 +71,7 @@ Layers 1-3 run entirely on your laptop. Once you're ready to go deeper, Part II 
 - Install [Claude Code](https://code.claude.com/docs/en/overview) in your terminal, VS Code, or whatever IDE you prefer (npm, requires Node.js)
 - Connect to Anthropic API (direct key or API gateway)
 - Learn the core loop: describe what you want, review what it does, iterate
+- Understand [context windows](https://docs.anthropic.com/en/docs/build-with-claude/context-windows): the amount of text a model can process in a single conversation, measured in tokens. Everything you send and receive counts against it. When it fills up, the model loses track of earlier context.
 - Use Sonnet for everyday tasks (quick edits, file searches, simple scripts). Switch to Opus (`/model opus`) for complex code, architecture decisions, debugging, and writing. Opus thinks deeper but costs more context.
 - Learn [plan mode](https://code.claude.com/docs/en/common-workflows#use-plan-mode-for-safe-code-analysis) (`shift+tab`): Claude researches your codebase and proposes a plan before writing any code. Great for understanding unfamiliar projects or planning big changes.
 - Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/github/github-mcp-server) for version control and repo management from day one
