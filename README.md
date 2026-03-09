@@ -2,9 +2,23 @@
 
 *By [pete-builds](https://github.com/pete-builds) · Last updated March 2026*
 
-**What I learned building a self-hosted AI stack from scratch, one layer at a time.**
+**A field guide to the applied AI stack, built one layer at a time.**
 
-Over the past few months I've been building this stack one service at a time, trying to understand how the pieces connect. Each section below represents a real layer in that stack today. This will feel most natural if you come from an IT or sysadmin background, but the concepts apply broadly.
+This playbook covers **applied AI engineering**: how to integrate models, build agent workflows, connect tools, automate operations, and ship real applications on infrastructure you control. It does not cover model training, neural network theory, or machine learning research. Those are different disciplines. This is the infrastructure and tooling side.
+
+These are the skills companies are hiring for in 2026 under titles like AI engineer, AI platform engineer, and automation architect. Docker, API orchestration, model gateways, tool calling, workflow automation, RAG pipelines, local inference. If you were hired tomorrow to build or support an AI-powered operation, this is what the stack looks like.
+
+**This is not a step-by-step tutorial.** It's a map. Each section introduces a technology, explains why it matters, and gives you enough context to start researching on your own. Think of it as a checklist of things worth learning, with starting points and checkpoints so you know when you've got it.
+
+### Who this is for
+
+- **IT professionals and sysadmins** looking to move into AI-adjacent roles by building on skills you already have
+- **Builders** who want to learn AI by doing, not by reading papers
+- **Anyone supporting business or client workflows** who needs to understand how AI tooling fits together in practice
+
+---
+
+Over the past few months I've been building this stack one service at a time, trying to understand how the pieces connect. Each section below is a real layer in that stack today.
 
 I'm still learning. What you see here is everything I've built so far, and I'll keep updating it as the stack evolves.
 
@@ -38,7 +52,7 @@ A dedicated Linux box running Docker becomes your operations platform. Run it in
 | 11 | [Open WebUI](#11-open-webui) | Chat interface for local + remote models | A front door for everyone else |
 | 12 | [Perplexica](#12-perplexica) | AI-powered search (self-hosted Perplexity) | Deep research without subscriptions |
 | 13 | [Build a Web App](#13-build-a-web-app) | Ship a real project with your AI coding assistant | Prove the stack works by building something |
-| 14 | [Monitoring + Infrastructure](#14-monitoring--infrastructure) | Uptime Kuma, Watchtower, Caddy, Tailscale | Keep it all running and reachable |
+| 14 | [Monitoring + Infrastructure](#14-monitoring--infrastructure) | Uptime Kuma, Caddy, Tailscale | Keep it all running and reachable |
 
 New to some of these terms? See the [Vocabulary](#vocabulary) at the bottom.
 
@@ -262,7 +276,6 @@ Go back to [Building Your First Agent](#building-your-first-agent) and create an
 - Learn [docker-compose](https://docs.docker.com/compose/): one YAML file per service
 - Understand volumes (persistent data) vs bind mounts
 - Understand networking: bridge, host, and container DNS
-- [Watchtower](https://github.com/containrrr/watchtower) for automatic image updates (archived Dec 2025, use with caution)
 
 > **✓ Checkpoint: Docker + Portainer**
 >
@@ -386,9 +399,14 @@ Start with a 7-8B model: fast enough to be useful, smart enough for automation t
 
 [SearXNG](https://github.com/searxng/searxng) is a private metasearch engine that aggregates results from 70+ sources without tracking you. It's the search backend for the rest of your stack: n8n workflows query it for web data, Perplexica uses it as its search engine, and any custom tool you build can hit the JSON API for real-time web results.
 
+### Why self-host search?
+
+Google's API costs money and rate-limits aggressively. Bing's API requires an Azure account. SearXNG gives you unlimited programmatic search with zero API keys and zero per-query costs. When an n8n workflow fires 500 search queries overnight to build a research report, that's $0. When your AI agent needs real-time web data to answer a question, it hits your local instance with no auth, no rate limits, and no third-party tracking.
+
 - Self-hosted, no API keys needed
 - JSON API for programmatic access
 - Privacy-first: no tracking, no profiling, no ads
+- Aggregates Google, Bing, DuckDuckGo, Wikipedia, and 70+ other sources in one query
 
 > **✓ Checkpoint: SearXNG**
 >
@@ -482,9 +500,15 @@ These five patterns cover the most common use cases. Everything else is variatio
 
 [Open WebUI](https://github.com/open-webui/open-webui) gives you a ChatGPT-style chat interface for all your models. Point it at Ollama and LiteLLM and anyone on your network can use AI without a subscription.
 
+### Why self-host a chat interface?
+
+ChatGPT and Claude subscriptions cost $20/month per person. Open WebUI gives everyone on your network access to every model in your stack (local and cloud) through one interface, with no per-seat cost. Conversations stay on your hardware. You control which models are available, who has access, and what data stays private. It's also the easiest way to let non-technical users interact with your local models without touching a terminal.
+
 - Connect to Ollama (local models) and LiteLLM (cloud models)
 - Multi-user support with accounts and conversation history
 - Document upload and RAG (retrieval-augmented generation)
+- Model selection per conversation: pick the right model for the task
+- Runs as a single Docker container
 
 > **✓ Checkpoint: Open WebUI**
 >
@@ -502,9 +526,14 @@ These five patterns cover the most common use cases. Everything else is variatio
 
 [Perplexica](https://github.com/ItzCrazyKns/Perplexica) is a self-hosted alternative to Perplexity AI. If SearXNG is the search backend (raw results, JSON API), Perplexica is the research frontend: takes a question, searches via SearXNG, synthesizes an answer using your LLMs, and cites sources.
 
+### Why self-host research?
+
+Perplexity Pro costs $20/month and you're locked into their model choices. Perplexica uses your SearXNG instance for search and your LLM stack (via LiteLLM) for synthesis. Swap models anytime. No subscription, no query limits, no data leaving your network. It's also the layer where SearXNG and LiteLLM come together visibly: you can see exactly which search results the model used and how it synthesized the answer.
+
 - Uses your SearXNG instance for web search (no API keys)
 - Routes through your LLM stack via LiteLLM
 - Multiple search modes: general, academic, writing, Wolfram Alpha
+- Cited sources on every answer so you can verify claims
 
 > **✓ Checkpoint: Perplexica**
 >
@@ -528,13 +557,15 @@ Build a dedicated agent (see [Agentic Workflows](#2-agentic-workflows)) that own
 
 ### Practices to bake into your agent
 
-- **Use latest stable versions.** Web search to verify current versions of languages, frameworks, and base images before scaffolding.
-- **Dockerize from the start.** Every app gets a `Dockerfile` and `docker-compose.yml`. No exceptions.
-- **Session resume files.** Each project gets a `SESSION-RESUME.md` with stack, status, decisions, and deploy info so your agent can pick up where it left off.
-- **Never deploy secrets to git.** API keys, tokens, and `.env` files stay on the server. Use environment variables in your compose file.
-- **Deploy via git pull, not file copy.** Push to GitHub, pull on the server, rebuild. Keeps the server's working tree clean.
-- **Security baselines.** CSRF protection, rate limiting, input validation. Your agent should enforce these by default.
-- **Health checks.** Add a `/healthz` endpoint and a Docker `HEALTHCHECK` so monitoring can verify the app is running.
+These go in your webapp agent's context doc. The agent enforces them on every project so you don't have to remember.
+
+- **Use latest stable versions.** Tell the agent to web search and verify current versions of languages, frameworks, and base images before scaffolding. Models trained months ago default to outdated versions.
+- **Dockerize from the start.** Every app gets a `Dockerfile` and `docker-compose.yml`. Your infra agent (Tank) deploys containers. If the app isn't containerized, the rest of your stack can't manage it.
+- **Session resume files.** Each project gets a `SESSION-RESUME.md` with stack, status, decisions, and deploy info so the agent can pick up where it left off across sessions.
+- **Never deploy secrets to git.** API keys, tokens, and `.env` files stay on the server. Use environment variables in your compose file. The agent should refuse to commit files matching `.env*` or `*secret*`.
+- **Deploy via git pull, not file copy.** Push to GitHub, pull on the server, rebuild. Your infra agent handles the deploy side.
+- **Security baselines.** CSRF protection, rate limiting, input validation. Bake these into the agent's context so they're applied by default, not bolted on after the fact.
+- **Health checks.** Add a `/healthz` endpoint and a Docker `HEALTHCHECK`. This is how Uptime Kuma and your infra agent verify the app is running.
 
 ### Ship it
 
@@ -562,7 +593,6 @@ Build a dedicated agent (see [Agentic Workflows](#2-agentic-workflows)) that own
 ## 14. Monitoring + Infrastructure
 
 - **[Uptime Kuma](https://github.com/louislam/uptime-kuma):** monitor services, get alerts when something goes down
-- **[Watchtower](https://github.com/containrrr/watchtower):** auto-pull updated container images (archived, no longer maintained)
 - **[Caddy](https://caddyserver.com/):** reverse proxy with automatic HTTPS
 - **[Tailscale](https://tailscale.com/):** mesh VPN for secure remote access without port forwarding
 - **[Homepage](https://github.com/gethomepage/homepage)/[Homarr](https://github.com/homarr-labs/homarr):** dashboard for everything at a glance
@@ -875,8 +905,10 @@ AI-specific terms used in this playbook. Standard infrastructure terms (Docker, 
 
 Things I haven't built yet but plan to explore.
 
-- **Evaluation frameworks.** Tools like [Braintrust](https://www.braintrust.dev/) and [promptfoo](https://www.promptfoo.dev/) for systematic prompt and model evaluation.
-- **Vector databases.** [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), or [pgvector](https://github.com/pgvector/pgvector) for scaling RAG beyond n8n's built-in support.
+- **Evaluation frameworks.** Tools like [Braintrust](https://www.braintrust.dev/) and [promptfoo](https://www.promptfoo.dev/) for systematic prompt and model evaluation. Right now I'm comparing models by feel. Structured evals would let me measure quality, cost, and latency across providers and make data-driven routing decisions in LiteLLM.
+- **Vector databases.** [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), or [pgvector](https://github.com/pgvector/pgvector) for scaling RAG beyond n8n's built-in vector store nodes. The goal is a persistent knowledge base that agents and workflows can query across sessions.
+- **Multi-agent orchestration.** Running agents that coordinate with each other, not just with me. Claude Code supports [teams](https://code.claude.com/docs/en/sub-agents) of agents working in parallel on shared task lists. The next step is having the infra agent and webapp agent collaborate on deploys without me as the relay.
+- **Fine-tuning and adapters.** Training small models on domain-specific data using [Unsloth](https://github.com/unslothai/unsloth) or [Axolotl](https://github.com/axolotl-ai-cloud/axolotl). A fine-tuned 7B model that knows your infrastructure might outperform a general 70B model for routine tasks.
 
 ---
 
