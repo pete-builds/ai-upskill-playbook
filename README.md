@@ -206,7 +206,7 @@ Bake these into every agent. Tell Claude to add them to each agent's skill file,
 
 ## 3. MCP — Connecting Tools
 
-[Model Context Protocol (MCP)](https://code.claude.com/docs/en/mcp) servers give AI tools direct access to external services via structured API calls. Many MCP servers are cloud-hosted or run locally on your laptop:
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) servers give AI tools direct access to external services via structured API calls. Many MCP servers are cloud-hosted or run locally on your laptop:
 
 - [GitHub MCP](https://github.com/github/github-mcp-server): PRs, issues, code search, repo management
 - [Google Calendar](https://console.cloud.google.com/): schedule, check availability, create events
@@ -218,6 +218,7 @@ Each MCP server is a set of tools your AI assistant can call on demand. Register
 > ✓ Checkpoint: MCP — Connecting Tools
 >
 > You should now be able to:
+> - Understand what the protocol is and how it's used
 > - Register cloud-hosted MCP servers (GitHub, Gmail, Calendar) with `claude mcp add`
 > - Ask Claude to interact with those services directly (read GitHub issues, check your calendar)
 >
@@ -250,7 +251,7 @@ Everything from here on runs on a server: a $5/month cloud VPS, a spare PC, a us
 
 ### Build Your Sysadmin Agent
 
-Go back to [Building Your First Agent](#building-your-first-agent) and create an agent that manages your Linux box. Give it SSH access, tell it about your services, and let it handle health checks, log viewing, container restarts, and deployments. You built the agent framework in Part I. Now you give it a real job.
+This is where the agent framework from Part I pays off. Create an agent that manages your Linux box, give it SSH access, and let it handle health checks, log viewing, container restarts, and deployments.
 
 Do it responsibly. Use key-based auth with a dedicated key you can revoke. Restrict sudo to specific commands. Prefer MCP tools (like Portainer) over raw SSH when possible, since APIs have structured permissions. Always review what the agent is doing before approving destructive operations. See [Appendix B: Building Tank](#appendix-b-case-study--building-tank-the-homelab-sysadmin-agent) for a full walkthrough.
 
