@@ -48,11 +48,10 @@ A dedicated Linux box running Docker becomes your operations platform. Run it in
 | 7 | [LiteLLM](#7-litellm) | Unified API gateway for LLMs | One endpoint, any model |
 | 8 | [Local LLMs](#8-local-llms) | Ollama on your Mac, PC, or GPU box | Run models with zero API costs |
 | 9 | [SearXNG](#9-searxng) | Private metasearch engine | Give your AI tools access to the web |
-| 10 | [n8n](#10-n8n) | Workflow automation platform | Connect everything to everything |
+| 10 | [n8n](#10-n8n) | Workflow automation platform | Where it all comes together |
 | 11 | [Open WebUI](#11-open-webui) | Chat interface for local + remote models | A front door for everyone else |
 | 12 | [Perplexica](#12-perplexica) | AI-powered search (self-hosted Perplexity) | Deep research without subscriptions |
-| 13 | [Build a Web App](#13-build-a-web-app) | Ship a real project with your AI coding assistant | Prove the stack works by building something |
-| 14 | [Monitoring + Infrastructure](#14-monitoring--infrastructure) | Uptime Kuma, Caddy, Tailscale | Keep it all running and reachable |
+| 13 | [Monitoring + Infrastructure](#13-monitoring--infrastructure) | Uptime Kuma, Caddy, Tailscale | Keep it all running and reachable |
 
 New to some of these terms? See the [Vocabulary](#vocabulary) at the bottom.
 
@@ -422,7 +421,9 @@ Google's API costs money and rate-limits aggressively. Bing's API requires an Az
 
 ## 10. n8n
 
-[n8n](https://n8n.io/) is a self-hosted workflow automation platform. Drag and drop nodes to connect APIs, databases, AI models, and triggers. Everything you've built so far (LiteLLM, local models, SearXNG, MCP) becomes the backend for automations you build here.
+This is the layer where everything comes together.
+
+[n8n](https://n8n.io/) is a self-hosted workflow automation platform. Drag and drop nodes to connect APIs, databases, AI models, and triggers. Everything you've built so far (LiteLLM, local models, SearXNG, MCP) becomes the backend for automations you build here. If this playbook has a "prove it works" moment, this is it. An n8n workflow that takes a webhook, routes it through your LLM gateway, queries your search engine, and posts the result to Slack is a real, deployable automation built entirely on your stack.
 
 - Visual workflow builder (code available when you need it)
 - AI agent nodes with tool calling and memory
@@ -545,52 +546,9 @@ Perplexity Pro costs $20/month and you're locked into their model choices. Perpl
 > Deploy Perplexica, run a research query, and verify it pulls results from SearXNG, processes them with your LLM, and returns a synthesized answer with sources.
 >
 > **Next unlock:**
-> Build and deploy a real webapp with Claude Code from idea to production.
-
-## 13. Build a Web App
-
-The best way to prove your stack works is to build something real. An AI coding assistant + Docker + your Linux box gets you from idea to deployed webapp in one session.
-
-### Build an agent first
-
-Build a dedicated agent (see [Agentic Workflows](#2-agentic-workflows)) that owns the full lifecycle of your webapps. Give it a context doc with your deploy target, stack preferences, and the practices below.
-
-### Practices to bake into your agent
-
-These go in your webapp agent's context doc. The agent enforces them on every project so you don't have to remember.
-
-- **Use latest stable versions.** Tell the agent to web search and verify current versions of languages, frameworks, and base images before scaffolding. Models trained months ago default to outdated versions.
-- **Dockerize from the start.** Every app gets a `Dockerfile` and `docker-compose.yml`. Your infra agent (Tank) deploys containers. If the app isn't containerized, the rest of your stack can't manage it.
-- **Session resume files.** Each project gets a `SESSION-RESUME.md` with stack, status, decisions, and deploy info so the agent can pick up where it left off across sessions.
-- **Never deploy secrets to git.** API keys, tokens, and `.env` files stay on the server. Use environment variables in your compose file. The agent should refuse to commit files matching `.env*` or `*secret*`.
-- **Deploy via git pull, not file copy.** Push to GitHub, pull on the server, rebuild. Your infra agent handles the deploy side.
-- **Security baselines.** CSRF protection, rate limiting, input validation. Bake these into the agent's context so they're applied by default, not bolted on after the fact.
-- **Health checks.** Add a `/healthz` endpoint and a Docker `HEALTHCHECK`. This is how Uptime Kuma and your infra agent verify the app is running.
-
-### Ship it
-
-- **Start simple.** Pick a problem you actually have.
-- **Example projects:**
-  - [Phantom Paste](https://github.com/pete-builds/phantom-paste): zero-knowledge ephemeral pastebin (Go + SQLite + vanilla JS)
-  - [Model Arena](https://github.com/pete-builds/open-model-arena): blind AI model comparison with ELO leaderboard (Python/FastAPI + SQLite)
-- **The workflow:** Describe it to your AI coding assistant, iterate, Dockerize, deploy to your Linux box
-- **Push to GitHub.** Public repos build your portfolio.
-- **[Tailscale Funnel](https://tailscale.com/kb/1223/funnel)** for sharing without exposing your network
-- You learn more building one real thing than reading ten tutorials
-
-> **✓ Checkpoint: Build a Web App**
->
-> **You should now be able to:**
-> - Go from idea to deployed webapp in one session
-> - Dockerize, push to GitHub, deploy via git pull, and expose via Tailscale Funnel
->
-> **Test it:**
-> Build a simple webapp (form submission, data display, API integration), containerize it, deploy to your Linux box, and verify it's accessible on your network. Push the code to GitHub.
->
-> **Next unlock:**
 > Monitor your stack and make services accessible from anywhere.
 
-## 14. Monitoring + Infrastructure
+## 13. Monitoring + Infrastructure
 
 - **[Uptime Kuma](https://github.com/louislam/uptime-kuma):** monitor services, get alerts when something goes down
 - **[Caddy](https://caddyserver.com/):** reverse proxy with automatic HTTPS
@@ -607,13 +565,13 @@ These go in your webapp agent's context doc. The agent enforces them on every pr
 > Deploy Uptime Kuma, add monitors for 3-5 services, and verify status checks pass. Set up Tailscale, connect from your phone or another device, and access a service.
 >
 > **Next unlock:**
-> The stack is complete. Explore evaluation frameworks and vector databases, or just start building.
+> The stack is complete. Start building automations, explore evaluation frameworks and vector databases, or just keep going.
 
 ---
 
 ## What You've Built
 
-If you've worked through this entire playbook, you now have an AI coding assistant, specialized agents, MCP integrations, a Linux server running Docker, a unified API gateway, local LLMs, private search, workflow automation, a chat interface, a research engine, real deployed webapps, and monitoring to keep it all running.
+If you've worked through this entire playbook, you now have an AI coding assistant, specialized agents, MCP integrations, a Linux server running Docker, a unified API gateway, local LLMs, private search, workflow automation, a chat interface, a research engine, and monitoring to keep it all running.
 
 ### How the pieces connect
 
@@ -641,8 +599,6 @@ You (laptop)
       │
       ├── Open WebUI ──── Chat interface for everyone
       │    └── Uses ────── Ollama (local) + LiteLLM (cloud)
-      │
-      ├── Your Apps ───── Webapps you built and deployed
       │
       └── Monitoring ──── Uptime Kuma, Caddy, Tailscale
 ```
