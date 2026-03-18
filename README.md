@@ -121,7 +121,15 @@ Tokens cost money and context windows fill up fast. Several patterns help:
 
 Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible beyond basic code editing.
 
-Security note: Claude Code can run commands on your machine. Be aware of [prompt injection](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks) risks: malicious content in files, repos, or web pages could try to trick it into running harmful commands. Review tool calls before approving, especially with unfamiliar code. Never blindly consume unofficial code from repos you haven't reviewed, including the ones linked in this playbook.
+### Security habits
+
+Start these from day one. They're easy to set up and painful to fix later.
+
+- **`.gitignore` first.** Before your first commit in any project, add `.env`, `.env.*`, `*.key`, and `credentials.*` to `.gitignore`. Claude Code can create and edit files, and a single `git add .` can push secrets to a public repo permanently. Even deleting the file later leaves it in git history.
+- **Use `.env` files for secrets.** API keys, tokens, and passwords go in `.env`, never hardcoded in config files or scripts. Reference them with environment variables in your code and compose files. This pattern carries through every layer of the stack.
+- **Review tool calls.** Claude Code can run commands on your machine. Be aware of [prompt injection](https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/mitigate-jailbreaks) risks: malicious content in files, repos, or web pages could try to trick it into running harmful commands. Review tool calls before approving, especially with unfamiliar code.
+- **Don't blindly trust repos.** Never blindly consume unofficial code from repositories you haven't reviewed, including the ones linked in this playbook.
+- **Add secrets rules to `CLAUDE.md`.** Tell Claude not to commit `.env` files, not to echo API keys, and not to hardcode credentials. It follows these instructions consistently.
 
 > ✓ Checkpoint: Claude Code
 >
@@ -751,7 +759,9 @@ Tech stack: [Languages, frameworks]
 
 ## Security Rules
 
-- Never commit API keys or passwords
+- Never commit .env files, API keys, or passwords
+- Never echo or log secrets in terminal output
+- Never hardcode credentials in config files or scripts
 ```
 
 ### Session Resume Template
