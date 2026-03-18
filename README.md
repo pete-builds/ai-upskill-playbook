@@ -278,14 +278,54 @@ Do it responsibly. Use key-based auth with a dedicated key you can revoke. Restr
 - Understand volumes (persistent data) vs bind mounts
 - Understand networking: bridge, host, and container DNS
 
+### Securing Your Stack
+
+Security is not a separate step. It's built into how you configure every container from day one. The defaults are not safe for production.
+
+**Environment variables and secrets**
+
+- Never hardcode API keys, passwords, or tokens in `docker-compose.yml`. Use a `.env` file in the same directory and reference variables with `${VARIABLE_NAME}`.
+- Add `.env` to `.gitignore` before your first commit. One leaked `.env` in a public repo exposes every service it touches.
+- For shared stacks, use [Docker secrets](https://docs.docker.com/engine/swarm/secrets/) or mount secrets as read-only files instead of environment variables. Environment variables show up in `docker inspect`, process listings, and crash logs.
+- Keep one `.env` per stack, not one global file. If your n8n stack gets compromised, your LiteLLM keys shouldn't be in the same file.
+- Rotate keys on a schedule. If a key leaks, you need to know which services use it and how to swap it without downtime.
+
+**Container permissions**
+
+- Run containers as non-root whenever the image supports it. Add `user: "1000:1000"` to your compose file or check the image docs for the correct UID.
+- Never mount the Docker socket (`/var/run/docker.sock`) into a container unless the service explicitly requires it (Portainer does, most things don't). A container with socket access can control every other container on the host.
+- Use read-only root filesystems (`read_only: true`) where possible. If a container gets compromised, the attacker can't write to the filesystem.
+- Drop unnecessary Linux capabilities with `cap_drop: [ALL]` and add back only what's needed with `cap_add`.
+
+**Network exposure**
+
+- Bind services to `127.0.0.1` or your Tailscale IP instead of `0.0.0.0`. A service on `0.0.0.0:8080` is accessible to your entire LAN (and the internet, if you have port forwarding enabled).
+- In compose files: `ports: ["127.0.0.1:8080:8080"]` instead of `ports: ["8080:8080"]`.
+- Use Docker's internal networks for container-to-container traffic. Only expose ports for services you access directly.
+- Put a reverse proxy (Caddy, Traefik) in front of web-facing services for HTTPS, auth, and rate limiting. Never expose management UIs (Portainer, n8n admin) directly to the internet.
+
+**Image hygiene**
+
+- Pull images from official sources. Check Docker Hub for the "Docker Official Image" or "Verified Publisher" badges.
+- Pin image versions in your compose files (`image: portainer/portainer-ce:2.21.5`, not `image: portainer/portainer-ce:latest`). `latest` can change without warning and break your stack.
+- Update images deliberately. Pull the new version, test it, then deploy. `docker compose pull && docker compose up -d` is a one-liner, but check the changelog first.
+- Remove unused images periodically with `docker image prune`. Old images waste disk and can contain known vulnerabilities.
+
+**Backups**
+
+- Back up your compose files and `.env` files. These define your entire stack. Losing them means rebuilding from scratch.
+- Back up named volumes (`docker volume ls`) for any service with persistent data (databases, configs, uploads). A volume disappearing means data loss.
+- Test your restores. A backup you've never restored is a backup you don't have.
+
 > ✓ Checkpoint: Docker + Portainer
 >
 > You should now be able to:
 > - Deploy containers from docker-compose files via Portainer's web UI
 > - Understand volumes (persistent data) and container networking
+> - Secure containers with `.env` files, non-root users, and proper network binding
 >
 > Test it:
-> Deploy a simple service (nginx, hello-world) using a docker-compose file. Check logs, restart the container, and verify data persists across restarts.
+> Deploy a simple service (nginx, hello-world) using a docker-compose file. Check logs, restart the container, and verify data persists across restarts. Then verify: is your `.env` in `.gitignore`? Are ports bound to `127.0.0.1`? Is the container running as non-root?
 >
 > Next unlock:
 > Build your own MCP servers to give Claude direct access to your homelab services.
