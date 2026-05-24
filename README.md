@@ -122,6 +122,17 @@ Tokens cost money and context windows fill up fast. Several patterns help:
 
 Read [common workflows](https://code.claude.com/docs/en/common-workflows) and [best practices](https://code.claude.com/docs/en/best-practices) to see what's possible beyond basic code editing.
 
+### Hooks
+
+[Hooks](https://code.claude.com/docs/en/hooks) let you run shell commands on specific Claude Code events: session start, before/after tool calls, on stop. They're how you automate behavior the model itself shouldn't be trusted to do consistently.
+
+Two hooks worth setting up early:
+
+- SessionStart: inject `git status` into the session context so every conversation begins knowing the current branch and modified files. No more "what's in my working tree?"
+- PreToolUse on Bash: block exfiltration patterns at the tool boundary. `curl`/`wget` to unknown external hosts, reverse shells, suspicious pipe-to-shell patterns. Catches a bad command even if the agent above was talked into running it.
+
+Hooks live in `~/.claude/settings.json` or per-project `.claude/settings.json`. See the [hooks docs](https://code.claude.com/docs/en/hooks) for the full event list.
+
 ### Security habits
 
 Start these from day one. They're easy to set up and painful to fix later.
@@ -146,9 +157,18 @@ Start these from day one. They're easy to set up and painful to fix later.
 
 ## 2. Agentic Workflows
 
-Instead of one conversation handling everything, you build purpose-built agents that each own a domain. No server needed. This all runs on your laptop. See the docs on [custom subagents](https://code.claude.com/docs/en/sub-agents) and [skills](https://code.claude.com/docs/en/skills).
+Instead of one conversation handling everything, you build purpose-built agents that each own a domain. No server needed. This all runs on your laptop.
 
-- What is an agent? A [skill](https://code.claude.com/docs/en/skills) (slash command) that spawns a [subagent](https://code.claude.com/docs/en/sub-agents) with its own persona, context docs, tools, and SOPs
+### Skills, Subagents, and Slash Commands
+
+These three terms get used interchangeably. They're not the same thing.
+
+- Slash commands are the keyboard interface. Typing `/foo` invokes a skill named `foo`.
+- [Skills](https://code.claude.com/docs/en/skills) are the reusable workflow definitions: markdown files in `.claude/skills/` (or `.claude/commands/`) with instructions, allowed tools, and trigger conditions. A skill can run inline in your current conversation, or it can spawn a subagent.
+- [Subagents](https://code.claude.com/docs/en/sub-agents) are sub-Claudes with their own context window, system prompt, and tool set. Useful for big research or build tasks where you don't want every fetched URL polluting your main conversation. They return a summary and disappear.
+
+In practice: you write a skill, give it a slash command for manual invocation, and have it spawn a subagent for tasks that need isolation. Most of the agents in the roster below follow this pattern.
+
 - Why agents? Context isolation. Each agent reads only what it needs.
 - Agent routing: a table in [`CLAUDE.md`](https://code.claude.com/docs/en/memory) maps topics to the right agent
 - Trigger phrases: each agent announces itself before working ("Checking with Tank...stand by")
@@ -959,7 +979,7 @@ AI-specific terms used in this playbook. Standard infrastructure terms (Docker, 
 | Agent | An AI assistant with a specific role, its own context, and access to tools. |
 | Subagent | An agent spawned by another agent to handle a specific subtask. |
 | MCP | Model Context Protocol. A standard that lets AI tools call external services directly. |
-| SSE | Server-Sent Events. A transport method for MCP servers that works over the network. |
+| SSE | Server-Sent Events. An older transport method for MCP servers. Deprecated in the current MCP spec — new servers should use Streamable HTTP. |
 | RAG | Retrieval-Augmented Generation. Feeding documents to an LLM so it can answer questions about them. |
 | Prompt injection | A security risk where malicious text tricks an AI into doing something unintended. |
 | Context window | The amount of text an LLM can process in a single conversation. Measured in tokens. |
@@ -975,7 +995,7 @@ Things I haven't built yet but plan to explore.
 
 - Evaluation frameworks. Tools like [Braintrust](https://www.braintrust.dev/) and [promptfoo](https://www.promptfoo.dev/) for systematic prompt and model evaluation. Right now I'm comparing models by feel. Structured evals would let me measure quality, cost, and latency across providers and make data-driven routing decisions in LiteLLM.
 - Vector databases. [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), or [pgvector](https://github.com/pgvector/pgvector) for scaling RAG beyond n8n's built-in vector store nodes. The goal is a persistent knowledge base that agents and workflows can query across sessions.
-- Multi-agent orchestration. Running agents that coordinate with each other, not just with me. Claude Code supports [teams](https://code.claude.com/docs/en/sub-agents) of agents working in parallel on shared task lists. The next step is having the infra agent and webapp agent collaborate on deploys without me as the relay.
+- Cross-domain agent coordination. I've shipped sequential pipelines where agents hand work to the next in line (Scout researches, Beat writes, Editor verifies — a four-stage editorial pipeline that publishes articles). The next step is having agents in different domains (infra + webapps + content) collaborate on a shared task list without me as the relay.
 - Fine-tuning and adapters. Training small models on domain-specific data using [Unsloth](https://github.com/unslothai/unsloth) or [Axolotl](https://github.com/axolotl-ai-cloud/axolotl). A fine-tuned 7B model that knows your infrastructure might outperform a general 70B model for routine tasks.
 
 ---
