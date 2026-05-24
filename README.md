@@ -47,13 +47,12 @@ A dedicated Linux box running Docker becomes your operations platform. Run it in
 | 6 | [Linux Box](#6-linux-box) | A dedicated machine running Linux | Always-on platform for everything below |
 | 7 | [Docker + Portainer](#7-docker--portainer) | Containers and a management UI | Install anything without breaking everything |
 | 8 | [MCP — Building Your Own](#8-mcp--building-your-own) | Build custom MCP tools | Give AI tools direct access to your services |
-| 9 | [Productionizing Your MCP Servers](#9-productionizing-your-mcp-servers) | Hardened containers, CI gates, supply-chain provenance, registry publishing | Ship MCP servers you'd put your name on |
-| 10 | [LiteLLM](#10-litellm) | Unified API gateway for LLMs | One endpoint, any model |
-| 11 | [Local LLMs](#11-local-llms) | Ollama on your Mac, PC, or GPU box | Run models with zero API costs |
-| 12 | [SearXNG](#12-searxng) | Private metasearch engine | Give your AI tools access to the web |
-| 13 | [n8n](#13-n8n) | Workflow automation platform | Where it all comes together |
-| 14 | [Open WebUI](#14-open-webui) | Chat interface for local + remote models | A front door for everyone else |
-| 15 | [Monitoring + Infrastructure](#15-monitoring--infrastructure) | Uptime Kuma, Caddy, Tailscale | Keep it all running and reachable |
+| 9 | [LiteLLM](#9-litellm) | Unified API gateway for LLMs | One endpoint, any model |
+| 10 | [Local LLMs](#10-local-llms) | Ollama on your Mac, PC, or GPU box | Run models with zero API costs |
+| 11 | [SearXNG](#11-searxng) | Private metasearch engine | Give your AI tools access to the web |
+| 12 | [n8n](#12-n8n) | Workflow automation platform | Where it all comes together |
+| 13 | [Open WebUI](#13-open-webui) | Chat interface for local + remote models | A front door for everyone else |
+| 14 | [Monitoring + Infrastructure](#14-monitoring--infrastructure) | Uptime Kuma, Caddy, Tailscale | Keep it all running and reachable |
 
 New to some of these terms? See the [Vocabulary](#vocabulary) at the bottom.
 
@@ -428,48 +427,9 @@ Once you have a Linux box and Docker, you can build your own MCP servers and giv
   - Media management, monitoring, and more
 - Streamable HTTP transport recommended for new servers. One server, accessible from any machine on your network.
 
-> ✓ Checkpoint: MCP — Building Your Own
->
-> You should now be able to:
-> - Build a custom MCP server using FastMCP + Docker + Streamable HTTP transport
-> - Register it with Claude Code and call its tools from any conversation
->
-> Test it:
-> Build a simple MCP server with 1-2 tools (e.g., check container status, read a file). Deploy as a container, register with `claude mcp add`, and invoke a tool.
->
-> Next unlock:
-> Take an MCP server from "works on my machine" to production-grade: hardened container, CI gates, signed images, registry publishing.
+### Patterns Worth Adopting
 
-## 9. Productionizing Your MCP Servers
-
-Section 8 gets you a working MCP server. This is what changes when you want to ship one you'd put your name on, install on someone else's machine, or hand to a team.
-
-### Container Hardening
-
-- Non-root user (UID 1000), no shell in the container, read-only root filesystem
-- Digest-pinned base image (not `python:3.12`, but `python@sha256:...`)
-- Hash-pinned wheels (`pip install --require-hashes`)
-- Multi-arch builds so it runs on Apple Silicon and x86 from the same image tag
-
-### CI Gates Before Merge
-
-- Static analysis: `ruff` for lint, `mypy --strict` for types
-- Vulnerability scan: `trivy` against the built image, fail on CRITICAL
-- Test coverage threshold (80%+ on the tool surface, 90%+ for anything destructive)
-
-### Supply Chain Provenance
-
-- SBOM (Software Bill of Materials) generated on every build, published as an artifact
-- Image signing with `cosign`, attestations pushed to GHCR
-- Build provenance attached so consumers can verify the image came from your CI, not a hand-pushed laptop build
-
-### Distribution
-
-- Publish to the [official MCP Registry](https://registry.modelcontextprotocol.io/) as `io.github.<your-handle>/<server-name>`. Wire an auto-publish workflow so new tags self-publish.
-- Ship a Helm chart for Kubernetes installs
-- Ship a `.dxt` bundle for one-click install in Claude Desktop
-
-### Operational Patterns Worth Adopting
+Once you've built a couple of MCP servers, these patterns save you from common foot-guns:
 
 - API-key auth at the server boundary — don't trust transport alone
 - Dry-run mode on every destructive tool — return the diff that *would* be applied, no side effects
@@ -477,20 +437,22 @@ Section 8 gets you a working MCP server. This is what changes when you want to s
 - Composite tools with rollback for multi-step workflows (e.g., `create_iot_network` = VLAN + WLAN + firewall rules + DHCP scope). On partial failure, undo what landed.
 - Stub mode for development without the real hardware or service: same surface, mock data. Useful for CI and for building the controller before the hardware shows up.
 
-> ✓ Checkpoint: Productionizing Your MCP Servers
+Container hardening for the MCP container itself (non-root, read-only rootfs, pinned base image, network exposure) follows the same rules as everything else in your stack — see section 7. If you're planning to publish your server publicly, see the [MCP Registry docs](https://registry.modelcontextprotocol.io/) for namespace, manifest, and publish-workflow specifics.
+
+> ✓ Checkpoint: MCP — Building Your Own
 >
 > You should now be able to:
-> - Ship an MCP server with a hardened container, signed images, and CI gates
-> - Publish to the MCP Registry under your namespace
-> - Add dry-run, audit logging, and rollback patterns to your destructive tools
+> - Build a custom MCP server using FastMCP + Docker + Streamable HTTP transport
+> - Register it with Claude Code and call its tools from any conversation
+> - Add dry-run, audit logging, and rollback patterns to any destructive tool
 >
 > Test it:
-> Take an existing MCP server. Add a `trivy` and `mypy --strict` step to CI. Pin the base image to a digest. Push and verify the registry listing shows your image with build provenance attached.
+> Build a simple MCP server with 1-2 tools (e.g., check container status, read a file). Deploy as a container, register with `claude mcp add`, and invoke a tool. If the tool is destructive, add a dry-run mode that returns the planned diff without applying it.
 >
 > Next unlock:
 > Set up LiteLLM to route between cloud APIs and local models from one endpoint.
 
-## 10. LiteLLM
+## 9. LiteLLM
 
 [LiteLLM](https://github.com/BerriAI/litellm) sits between your apps and AI model providers. Point everything at one URL, and LiteLLM routes to OpenAI, Anthropic, local models, or whatever you configure.
 
@@ -515,7 +477,7 @@ Section 8 gets you a working MCP server. This is what changes when you want to s
 > Next unlock:
 > Run local models with Ollama for free, private inference.
 
-## 11. Local LLMs
+## 10. Local LLMs
 
 A local model on consumer hardware won't match the latest Claude or GPT for complex reasoning or code generation. That's not the point. Local models are worth running for other reasons:
 
@@ -570,7 +532,7 @@ Start with a 7-8B model: fast enough to be useful, smart enough for automation t
 > Next unlock:
 > Deploy SearXNG to give your AI tools private web search capability.
 
-## 12. SearXNG
+## 11. SearXNG
 
 [SearXNG](https://github.com/searxng/searxng) is a private metasearch engine that aggregates results from 70+ sources without tracking you. It's the search backend for the rest of your stack: n8n workflows query it for web data, and any custom tool you build can hit the JSON API for real-time web results.
 
@@ -595,7 +557,7 @@ Google's API costs money and rate-limits aggressively. Bing's API requires an Az
 > Next unlock:
 > Build automated workflows in n8n that connect AI, search, APIs, and triggers.
 
-## 13. n8n
+## 12. n8n
 
 This is the layer where everything comes together.
 
@@ -673,7 +635,7 @@ These five patterns cover the most common use cases. Everything else is variatio
 > Next unlock:
 > Deploy Open WebUI to give everyone a ChatGPT-style interface for your models.
 
-## 14. Open WebUI
+## 13. Open WebUI
 
 [Open WebUI](https://github.com/open-webui/open-webui) gives you a ChatGPT-style chat interface for all your models. Point it at Ollama and LiteLLM and anyone on your network can use AI without a subscription.
 
@@ -699,7 +661,7 @@ ChatGPT and Claude subscriptions cost $20/month per person. Open WebUI gives eve
 > Next unlock:
 > Monitor your stack and make services accessible from anywhere.
 
-## 15. Monitoring + Infrastructure
+## 14. Monitoring + Infrastructure
 
 - [Uptime Kuma](https://github.com/louislam/uptime-kuma): monitor services, get alerts when something goes down
 - [Caddy](https://caddyserver.com/): reverse proxy with automatic HTTPS
