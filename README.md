@@ -69,17 +69,19 @@ Layers 1-5 run entirely on your laptop. Once you're ready to go deeper, Part II 
 [Claude Code](https://code.claude.com/docs/en/overview) is an AI coding assistant that runs in your terminal. It reads your files, writes code, runs commands, and iterates on problems with you. This is layer one because it accelerates everything that comes after.
 
 - Get the [$20/month Claude Pro subscription](https://claude.com/pricing) (includes Claude Code access)
-- Install [Claude Code](https://code.claude.com/docs/en/overview) in your terminal, VS Code, or whatever IDE you prefer (npm, requires Node.js)
+- Install [Claude Code](https://code.claude.com/docs/en/overview) in your terminal, VS Code, or whatever IDE you prefer (npm, requires Node.js). It's also available as a desktop app and on the web at [claude.ai/code](https://claude.ai/code), but the terminal is where you'll learn the most.
 - Connect to Anthropic API (direct key or API gateway)
 - Learn the core loop: describe what you want, review what it does, iterate
 - Understand [context windows](https://docs.anthropic.com/en/docs/build-with-claude/context-windows): the amount of text a model can process in a single conversation, measured in tokens. Everything you send and receive counts against it. When it fills up, the model loses track of earlier context.
-- Use Sonnet for everyday tasks (quick edits, file searches, simple scripts). Switch to Opus (`/model opus`) for complex code, architecture decisions, debugging, and writing. Opus thinks deeper but costs more context.
+- Use the default model for everyday tasks (quick edits, file searches, simple scripts) and switch up a tier (`/model`) for complex code, architecture decisions, debugging, and writing. The specific names change (as of mid-2026 the Claude Code default is Sonnet 5, with Fable 5 as the top tier), but the pattern doesn't: fast and cheap by default, escalate for hard problems.
 - Learn [plan mode](https://code.claude.com/docs/en/common-workflows#use-plan-mode-for-safe-code-analysis) (`shift+tab`): Claude researches your codebase and proposes a plan before writing any code. Great for understanding unfamiliar projects or planning big changes.
 - Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/github/github-mcp-server) for version control and repo management from day one
 - Customize your [statusline](https://code.claude.com/docs/en/statusline) (context usage, model, git status, session metrics). I built a [custom one](https://github.com/pete-builds/claude-code-statusline) with weather, billing tier, and battery.
 - Create a [`CLAUDE.md`](https://code.claude.com/docs/en/memory) project file for persistent instructions
 - Use `/init` to scaffold new projects
-- Learn [slash commands](https://code.claude.com/docs/en/interactive-mode#built-in-commands): `/compact`, `/clear`, `/model`, `/cost`
+- Learn [slash commands](https://code.claude.com/docs/en/interactive-mode#built-in-commands): `/compact`, `/clear`, `/model`, `/cost`. Also worth knowing: `/rewind` recovers conversation state (even from before a `/clear`), and `/cd` moves a running session to a new directory without losing context.
+- Run shell commands inline with the `!` prefix (`! npm test`): the output lands in the conversation and Claude explains failures without a second prompt
+- Know about `--safe-mode`: it launches with every customization surface disabled (CLAUDE.md, hooks, MCP servers, skills). If a bug disappears in safe mode, it lives in your config, not the CLI. The fastest way to bisect a broken setup.
 - Set up [hooks](https://code.claude.com/docs/en/hooks) for session start, tool calls, and notifications
 - Build [custom skills](https://code.claude.com/docs/en/skills) (slash commands) for repeatable workflows
 - Create [custom subagents](https://code.claude.com/docs/en/sub-agents) to delegate specialized tasks
