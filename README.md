@@ -535,25 +535,26 @@ ollama run llama3.2
 
 ### Picking the right model for your hardware
 
-The biggest factor is VRAM (GPU memory) or unified memory (Apple Silicon). Models come in different sizes, and bigger models need more memory. Here's a rough guide:
+The biggest factor is VRAM (GPU memory) or unified memory (Apple Silicon). Specific model names go stale in months, so think in memory tiers and model classes, then check a live leaderboard for whatever is current before you pull:
 
-| Memory | What you can run | Examples |
-|--------|-----------------|----------|
-| 8 GB | Small models (1-3B parameters) | Llama 3.2 3B, Gemma 2 2B, Phi-3 Mini |
-| 16 GB | Medium models (7-8B parameters) | Llama 3.1 8B, Mistral 7B, Qwen 2.5 7B |
-| 32 GB | Large models (13-14B parameters) | Llama 3.1 13B, DeepSeek-R1 14B |
-| 48-64 GB | Extra large models (30-70B parameters) | Llama 3.1 70B (quantized), Qwen 2.5 72B (quantized) |
+| Memory | What you can run |
+|--------|-----------------|
+| 8 GB | Small dense models (3-8B parameters). Fine for chat, classification, and simple automation. |
+| 16 GB | Mid-size dense models (7-14B). The sweet spot for n8n workflow tasks and summarization. |
+| 24-32 GB | Large dense models (24-32B) at 4-bit quantization. Genuinely useful coding assistants live here. |
+| 48 GB+ | Big models and Mixture-of-Experts (MoE) models, quantized. Approaching cloud quality on some tasks. |
 
-Apple Silicon (M1/M2/M3/M4) uses unified memory (GPU shares system RAM). A Mac Mini with 16GB runs 7-8B models comfortably. 32GB opens up the 13-14B range.
+Apple Silicon (M1 through M4) uses unified memory (GPU shares system RAM). NVIDIA GPUs use dedicated VRAM: an RTX 3060 (12GB) handles the small tier, a 3090/4090 (24GB) opens up the large-dense tier.
 
-NVIDIA GPUs use dedicated VRAM. An RTX 3060 (12GB) handles 7B models. An RTX 3090/4090 (24GB) gives room for larger models.
+Two concepts that change the math:
 
-Quantization compresses models to use less memory at a small quality cost. A 70B model that normally needs 140GB can run in ~40GB at 4-bit quantization. Ollama handles this with model tags (e.g., `llama3.1:70b-q4_0`).
+- Quantization compresses models to use less memory at a small quality cost. A model that needs 140GB at full precision can run in roughly 40GB at 4-bit. Ollama handles this with model tags (e.g., `:q4_0` variants).
+- Mixture-of-Experts (MoE) models only activate a fraction of their parameters per token, so a huge MoE model can run faster than its size suggests. Most of the strongest open-weight models in 2026 (the Qwen, DeepSeek, Kimi, and GLM flagship lines) are MoE.
 
-Start with a 7-8B model: fast enough to be useful, smart enough for automation tasks, small enough to leave room for other services.
+The open-weight frontier moves fast: the models topping leaderboards in mid-2026 mostly didn't exist when this playbook was first written. Before pulling anything, check the [Ollama model library](https://ollama.com/library) for what's current and a leaderboard like [LMArena](https://lmarena.ai/) for how the families compare. Start with a mid-size model: fast enough to be useful, smart enough for automation tasks, small enough to leave room for other services.
 
 - [Ollama](https://ollama.com/) for model management and inference
-- Models: [Llama](https://ollama.com/library/llama3.2), [Mistral](https://ollama.com/library/mistral), [Qwen](https://ollama.com/library/qwen2.5), [DeepSeek](https://ollama.com/library/deepseek-r1), [Gemma](https://ollama.com/library/gemma2), and more
+- Model families worth knowing: Qwen, DeepSeek, Llama, Mistral, Gemma, Kimi, GLM. All available through the [Ollama library](https://ollama.com/library).
 - Register with LiteLLM so all your tools can use them
 - Run coding assistants, chat models, and embedding models side by side
 
