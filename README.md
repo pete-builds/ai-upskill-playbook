@@ -251,7 +251,7 @@ Self-auditing agents. Periodically have an agent grade its own playbook against 
 - [Gmail](https://console.cloud.google.com/): read, search, draft emails
 - [Anthropic's built-in connectors](https://code.claude.com/docs/en/mcp): many integrations available out of the box
 
-Each MCP server is a set of tools your AI assistant can call on demand. Register them with `claude mcp add` and they're available in every conversation. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for more. Once you have a Linux box (Part II), you can also [build and self-host your own](#8-mcp--building-your-own).
+Each MCP server is a set of tools your AI assistant can call on demand. Register them with `claude mcp add` and they're available in every conversation. For servers that use OAuth, `claude mcp login <name>` and `claude mcp logout <name>` run the auth flow straight from the CLI, which is handy for scripted or headless setups. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for more. Once you have a Linux box (Part II), you can also [build and self-host your own](#8-mcp--building-your-own).
 
 > ✓ Checkpoint: MCP — Connecting Tools
 >
@@ -446,6 +446,18 @@ Once you have a Linux box and Docker, you can build your own MCP servers and giv
   - Home automation, DNS, network tools
   - Media management, monitoring, and more
 - Streamable HTTP transport recommended for new servers. One server, accessible from any machine on your network.
+
+### The 2026-07-28 Spec Revision
+
+The MCP spec revision dated 2026-07-28 is the largest since the protocol launched, and it changes how you should design new servers:
+
+- Stateless core: the `initialize` handshake and `Mcp-Session-Id` header are gone. Every request is self-contained, so servers scale behind a plain load balancer with no session affinity and no shared session store.
+- Explicit state: servers that need state return a handle (say, a `job_id`) from one tool call and accept it as an argument on the next. State lives in the conversation where the model can see it, not hidden in server memory. If you're building a new server today, design for this pattern now so there's nothing to migrate later.
+- Deprecations: Roots, Sampling, and Logging enter a 12-month deprecation window. Tasks (long-running work) and MCP Apps (server-rendered UI in sandboxed iframes) graduate to official extensions.
+- Auth hardening: tighter OAuth requirements at the server boundary, including issuer validation and issuer-bound credentials.
+- One breaking change to check for: "resource not found" errors move from the custom `-32002` code to the standard JSON-RPC `-32602`. If your server or client hardcodes `-32002`, update it.
+
+If you build with FastMCP, watch its release notes: SDKs are expected to ship spec support within the validation window following the release.
 
 ### Patterns Worth Adopting
 
@@ -979,7 +991,7 @@ AI-specific terms used in this playbook. Standard infrastructure terms (Docker, 
 | Agent | An AI assistant with a specific role, its own context, and access to tools. |
 | Subagent | An agent spawned by another agent to handle a specific subtask. |
 | MCP | Model Context Protocol. A standard that lets AI tools call external services directly. |
-| SSE | Server-Sent Events. An older transport method for MCP servers. Deprecated in the current MCP spec — new servers should use Streamable HTTP. |
+| SSE | Server-Sent Events. An older transport method for MCP servers, deprecated in the MCP spec. New servers use Streamable HTTP, which is fully stateless as of the 2026-07-28 spec revision. |
 | RAG | Retrieval-Augmented Generation. Feeding documents to an LLM so it can answer questions about them. |
 | Prompt injection | A security risk where malicious text tricks an AI into doing something unintended. |
 | Context window | The amount of text an LLM can process in a single conversation. Measured in tokens. |
