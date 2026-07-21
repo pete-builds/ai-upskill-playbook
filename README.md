@@ -167,7 +167,7 @@ These three terms get used interchangeably. They're not the same thing.
 
 - Slash commands are the keyboard interface. Typing `/foo` invokes a skill named `foo`.
 - [Skills](https://code.claude.com/docs/en/skills) are the reusable workflow definitions: markdown files in `.claude/skills/` (or `.claude/commands/`) with instructions, allowed tools, and trigger conditions. A skill can run inline in your current conversation, or it can spawn a subagent.
-- [Subagents](https://code.claude.com/docs/en/sub-agents) are sub-Claudes with their own context window, system prompt, and tool set. Useful for big research or build tasks where you don't want every fetched URL polluting your main conversation. They return a summary and disappear.
+- [Subagents](https://code.claude.com/docs/en/sub-agents) are sub-Claudes with their own context window, system prompt, and tool set. Useful for big research or build tasks where you don't want every fetched URL polluting your main conversation. They return a summary and disappear. As of mid-2026, subagents can spawn their own subagents (capped at five levels deep), so a coordinator agent can fan work out to specialists without you as the relay.
 
 In practice: you write a skill, give it a slash command for manual invocation, and have it spawn a subagent for tasks that need isolation. Most of the agents in the roster below follow this pattern.
 
@@ -653,7 +653,7 @@ Email/webhook trigger → LLM classifies into categories (URGENT, QUESTION, BUG,
 - Log everything. Add a "Write to Google Sheets" or "Append to File" node so you can review what the workflow did.
 - Error handling matters. Use n8n's error workflows to catch API failures.
 - Keep prompts in one place. Use n8n's "Set" node to define your system prompt as a variable at the top of the workflow.
-- LiteLLM fallback groups. Configure `smart` and `fast` groups so workflows keep running if your primary model is down.
+- LiteLLM fallback groups. Configure `smart` and `fast` groups so workflows keep running if your primary model is down. (Claude Code has the same idea built in: the `fallbackModel` setting chains up to three fallback models when the primary is overloaded.)
 
 These five patterns cover the most common use cases. Everything else is variations on these.
 
@@ -1009,7 +1009,7 @@ Things I haven't built yet but plan to explore.
 
 - Evaluation frameworks. Tools like [Braintrust](https://www.braintrust.dev/) and [promptfoo](https://www.promptfoo.dev/) for systematic prompt and model evaluation. Right now I'm comparing models by feel. Structured evals would let me measure quality, cost, and latency across providers and make data-driven routing decisions in LiteLLM.
 - Vector databases. [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), or [pgvector](https://github.com/pgvector/pgvector) for scaling RAG beyond n8n's built-in vector store nodes. The goal is a persistent knowledge base that agents and workflows can query across sessions.
-- Cross-domain agent coordination. I've shipped sequential pipelines where agents hand work to the next in line (Scout researches, Beat writes, Editor verifies — a four-stage editorial pipeline that publishes articles). The next step is having agents in different domains (infra + webapps + content) collaborate on a shared task list without me as the relay.
+- Cross-domain agent coordination. I've shipped sequential pipelines where agents hand work to the next in line (Scout researches, Beat writes, Editor verifies — a four-stage editorial pipeline that publishes articles). The next step is having agents in different domains (infra + webapps + content) collaborate on a shared task list without me as the relay. The plumbing for this is arriving: Claude Code now supports nested subagent delegation and has experimental agent-teams orchestration behind a flag, so this is moving from "roll your own" to "learn the built-in primitives".
 - Fine-tuning and adapters. Training small models on domain-specific data using [Unsloth](https://github.com/unslothai/unsloth) or [Axolotl](https://github.com/axolotl-ai-cloud/axolotl). A fine-tuned 7B model that knows your infrastructure might outperform a general 70B model for routine tasks.
 
 ---
