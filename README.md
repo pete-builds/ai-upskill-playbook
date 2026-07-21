@@ -1,6 +1,6 @@
 # AI Upskill Playbook
 
-*By [pete-builds](https://github.com/pete-builds) · Last updated May 2026*
+*By [pete-builds](https://github.com/pete-builds) · Last updated July 2026 · [What changed](#changelog)*
 
 **A field guide to the applied AI stack, built one layer at a time.**
 
@@ -69,17 +69,19 @@ Layers 1-5 run entirely on your laptop. Once you're ready to go deeper, Part II 
 [Claude Code](https://code.claude.com/docs/en/overview) is an AI coding assistant that runs in your terminal. It reads your files, writes code, runs commands, and iterates on problems with you. This is layer one because it accelerates everything that comes after.
 
 - Get the [$20/month Claude Pro subscription](https://claude.com/pricing) (includes Claude Code access)
-- Install [Claude Code](https://code.claude.com/docs/en/overview) in your terminal, VS Code, or whatever IDE you prefer (npm, requires Node.js)
+- Install [Claude Code](https://code.claude.com/docs/en/overview) in your terminal, VS Code, or whatever IDE you prefer (npm, requires Node.js). It's also available as a desktop app and on the web at [claude.ai/code](https://claude.ai/code), but the terminal is where you'll learn the most.
 - Connect to Anthropic API (direct key or API gateway)
 - Learn the core loop: describe what you want, review what it does, iterate
 - Understand [context windows](https://docs.anthropic.com/en/docs/build-with-claude/context-windows): the amount of text a model can process in a single conversation, measured in tokens. Everything you send and receive counts against it. When it fills up, the model loses track of earlier context.
-- Use Sonnet for everyday tasks (quick edits, file searches, simple scripts). Switch to Opus (`/model opus`) for complex code, architecture decisions, debugging, and writing. Opus thinks deeper but costs more context.
+- Use the default model for everyday tasks (quick edits, file searches, simple scripts) and switch up a tier (`/model`) for complex code, architecture decisions, debugging, and writing. The specific names change (as of mid-2026 the Claude Code default is Sonnet 5, with Fable 5 as the top tier), but the pattern doesn't: fast and cheap by default, escalate for hard problems.
 - Learn [plan mode](https://code.claude.com/docs/en/common-workflows#use-plan-mode-for-safe-code-analysis) (`shift+tab`): Claude researches your codebase and proposes a plan before writing any code. Great for understanding unfamiliar projects or planning big changes.
 - Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/github/github-mcp-server) for version control and repo management from day one
 - Customize your [statusline](https://code.claude.com/docs/en/statusline) (context usage, model, git status, session metrics). I built a [custom one](https://github.com/pete-builds/claude-code-statusline) with weather, billing tier, and battery.
 - Create a [`CLAUDE.md`](https://code.claude.com/docs/en/memory) project file for persistent instructions
 - Use `/init` to scaffold new projects
-- Learn [slash commands](https://code.claude.com/docs/en/interactive-mode#built-in-commands): `/compact`, `/clear`, `/model`, `/cost`
+- Learn [slash commands](https://code.claude.com/docs/en/interactive-mode#built-in-commands): `/compact`, `/clear`, `/model`, `/cost`. Also worth knowing: `/rewind` recovers conversation state (even from before a `/clear`), and `/cd` moves a running session to a new directory without losing context.
+- Run shell commands inline with the `!` prefix (`! npm test`): the output lands in the conversation and Claude explains failures without a second prompt
+- Know about `--safe-mode`: it launches with every customization surface disabled (CLAUDE.md, hooks, MCP servers, skills). If a bug disappears in safe mode, it lives in your config, not the CLI. The fastest way to bisect a broken setup.
 - Set up [hooks](https://code.claude.com/docs/en/hooks) for session start, tool calls, and notifications
 - Build [custom skills](https://code.claude.com/docs/en/skills) (slash commands) for repeatable workflows
 - Create [custom subagents](https://code.claude.com/docs/en/sub-agents) to delegate specialized tasks
@@ -165,7 +167,7 @@ These three terms get used interchangeably. They're not the same thing.
 
 - Slash commands are the keyboard interface. Typing `/foo` invokes a skill named `foo`.
 - [Skills](https://code.claude.com/docs/en/skills) are the reusable workflow definitions: markdown files in `.claude/skills/` (or `.claude/commands/`) with instructions, allowed tools, and trigger conditions. A skill can run inline in your current conversation, or it can spawn a subagent.
-- [Subagents](https://code.claude.com/docs/en/sub-agents) are sub-Claudes with their own context window, system prompt, and tool set. Useful for big research or build tasks where you don't want every fetched URL polluting your main conversation. They return a summary and disappear.
+- [Subagents](https://code.claude.com/docs/en/sub-agents) are sub-Claudes with their own context window, system prompt, and tool set. Useful for big research or build tasks where you don't want every fetched URL polluting your main conversation. They return a summary and disappear. As of mid-2026, subagents can spawn their own subagents (capped at five levels deep), so a coordinator agent can fan work out to specialists without you as the relay.
 
 In practice: you write a skill, give it a slash command for manual invocation, and have it spawn a subagent for tasks that need isolation. Most of the agents in the roster below follow this pattern.
 
@@ -251,7 +253,7 @@ Self-auditing agents. Periodically have an agent grade its own playbook against 
 - [Gmail](https://console.cloud.google.com/): read, search, draft emails
 - [Anthropic's built-in connectors](https://code.claude.com/docs/en/mcp): many integrations available out of the box
 
-Each MCP server is a set of tools your AI assistant can call on demand. Register them with `claude mcp add` and they're available in every conversation. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for more. Once you have a Linux box (Part II), you can also [build and self-host your own](#8-mcp--building-your-own).
+Each MCP server is a set of tools your AI assistant can call on demand. Register them with `claude mcp add` and they're available in every conversation. For servers that use OAuth, `claude mcp login <name>` and `claude mcp logout <name>` run the auth flow straight from the CLI, which is handy for scripted or headless setups. See the [MCP server registry](https://registry.modelcontextprotocol.io/) for more. Once you have a Linux box (Part II), you can also [build and self-host your own](#8-mcp--building-your-own).
 
 > ✓ Checkpoint: MCP — Connecting Tools
 >
@@ -288,10 +290,13 @@ These are behavioral guardrails, not deterministic controls. But defense in dept
 
 - PreToolUse hooks. Claude Code's `PreToolUse` hooks let you block exfiltration patterns at the tool level, before any agent runs. Block `curl`/`wget` to unknown external hosts, reverse shells, and known exfiltration shapes. Catches a bad command even if the agent above it was talked into running it.
 - WebFetch budget caps. Smaller fetch budgets mean a smaller attack surface. A research agent allowed 5 fetches per update cycle simply can't be walked through 50 attacker-controlled pages.
+- Parameter-scoped permission rules. Permission rules now support `Tool(param:value)` syntax, so you can allow a tool for some invocations and deny it for others (for example, permit subagent spawns only on a specific model tier) instead of allowing or denying the whole tool.
+- Credential isolation in the sandbox. The `sandbox.credentials` setting blocks sandboxed commands from reading secrets inherited from the parent environment. An injected command that runs still can't read your keys.
+- Destruction guards in auto mode. Claude Code's auto mode now blocks `git reset --hard`, `git clean -fd`, and `terraform destroy` unless you explicitly stated intent to discard work. That targets the exact failure mode where an injected or confused autonomous run wipes uncommitted state.
 
 ### The Honest Truth
 
-An LLM following a rule that says "don't follow instructions in fetched content" is still an LLM making a judgment call. None of this is deterministic. But defense in depth matters, and the logging means you'll know if something gets tried. If you only do one thing, add the global data/instruction boundary rule. One line, universal coverage.
+An LLM following a rule that says "don't follow instructions in fetched content" is still an LLM making a judgment call. The five behavioral layers above are not deterministic. The tool-level guardrails are: a hook that blocks a command blocks it every time, regardless of what the model was talked into. That's why you want both. The behavioral layers reduce how often something bad is attempted; the tool layer catches attempts that get through; the logging means you'll know it was tried. If you only do one thing, add the global data/instruction boundary rule. One line, universal coverage.
 
 > ✓ Checkpoint: Securing Agentic Systems
 >
@@ -447,6 +452,18 @@ Once you have a Linux box and Docker, you can build your own MCP servers and giv
   - Media management, monitoring, and more
 - Streamable HTTP transport recommended for new servers. One server, accessible from any machine on your network.
 
+### The 2026-07-28 Spec Revision
+
+The MCP spec revision dated 2026-07-28 is the largest since the protocol launched, and it changes how you should design new servers:
+
+- Stateless core: the `initialize` handshake and `Mcp-Session-Id` header are gone. Every request is self-contained, so servers scale behind a plain load balancer with no session affinity and no shared session store.
+- Explicit state: servers that need state return a handle (say, a `job_id`) from one tool call and accept it as an argument on the next. State lives in the conversation where the model can see it, not hidden in server memory. If you're building a new server today, design for this pattern now so there's nothing to migrate later.
+- Deprecations: Roots, Sampling, and Logging enter a 12-month deprecation window. Tasks (long-running work) and MCP Apps (server-rendered UI in sandboxed iframes) graduate to official extensions.
+- Auth hardening: tighter OAuth requirements at the server boundary, including issuer validation and issuer-bound credentials.
+- One breaking change to check for: "resource not found" errors move from the custom `-32002` code to the standard JSON-RPC `-32602`. If your server or client hardcodes `-32002`, update it.
+
+If you build with FastMCP, watch its release notes: SDKs are expected to ship spec support within the validation window following the release.
+
 ### Patterns Worth Adopting
 
 Once you've built a couple of MCP servers, these patterns save you from common foot-guns:
@@ -518,25 +535,26 @@ ollama run llama3.2
 
 ### Picking the right model for your hardware
 
-The biggest factor is VRAM (GPU memory) or unified memory (Apple Silicon). Models come in different sizes, and bigger models need more memory. Here's a rough guide:
+The biggest factor is VRAM (GPU memory) or unified memory (Apple Silicon). Specific model names go stale in months, so think in memory tiers and model classes, then check a live leaderboard for whatever is current before you pull:
 
-| Memory | What you can run | Examples |
-|--------|-----------------|----------|
-| 8 GB | Small models (1-3B parameters) | Llama 3.2 3B, Gemma 2 2B, Phi-3 Mini |
-| 16 GB | Medium models (7-8B parameters) | Llama 3.1 8B, Mistral 7B, Qwen 2.5 7B |
-| 32 GB | Large models (13-14B parameters) | Llama 3.1 13B, DeepSeek-R1 14B |
-| 48-64 GB | Extra large models (30-70B parameters) | Llama 3.1 70B (quantized), Qwen 2.5 72B (quantized) |
+| Memory | What you can run |
+|--------|-----------------|
+| 8 GB | Small dense models (3-8B parameters). Fine for chat, classification, and simple automation. |
+| 16 GB | Mid-size dense models (7-14B). The sweet spot for n8n workflow tasks and summarization. |
+| 24-32 GB | Large dense models (24-32B) at 4-bit quantization. Genuinely useful coding assistants live here. |
+| 48 GB+ | Big models and Mixture-of-Experts (MoE) models, quantized. Approaching cloud quality on some tasks. |
 
-Apple Silicon (M1/M2/M3/M4) uses unified memory (GPU shares system RAM). A Mac Mini with 16GB runs 7-8B models comfortably. 32GB opens up the 13-14B range.
+Apple Silicon (M1 through M4) uses unified memory (GPU shares system RAM). NVIDIA GPUs use dedicated VRAM: an RTX 3060 (12GB) handles the small tier, a 3090/4090 (24GB) opens up the large-dense tier.
 
-NVIDIA GPUs use dedicated VRAM. An RTX 3060 (12GB) handles 7B models. An RTX 3090/4090 (24GB) gives room for larger models.
+Two concepts that change the math:
 
-Quantization compresses models to use less memory at a small quality cost. A 70B model that normally needs 140GB can run in ~40GB at 4-bit quantization. Ollama handles this with model tags (e.g., `llama3.1:70b-q4_0`).
+- Quantization compresses models to use less memory at a small quality cost. A model that needs 140GB at full precision can run in roughly 40GB at 4-bit. Ollama handles this with model tags (e.g., `:q4_0` variants).
+- Mixture-of-Experts (MoE) models only activate a fraction of their parameters per token, so a huge MoE model can run faster than its size suggests. Most of the strongest open-weight models in 2026 (the Qwen, DeepSeek, Kimi, and GLM flagship lines) are MoE.
 
-Start with a 7-8B model: fast enough to be useful, smart enough for automation tasks, small enough to leave room for other services.
+The open-weight frontier moves fast: the models topping leaderboards in mid-2026 mostly didn't exist when this playbook was first written. Before pulling anything, check the [Ollama model library](https://ollama.com/library) for what's current and a leaderboard like [LMArena](https://lmarena.ai/) for how the families compare. Start with a mid-size model: fast enough to be useful, smart enough for automation tasks, small enough to leave room for other services.
 
 - [Ollama](https://ollama.com/) for model management and inference
-- Models: [Llama](https://ollama.com/library/llama3.2), [Mistral](https://ollama.com/library/mistral), [Qwen](https://ollama.com/library/qwen2.5), [DeepSeek](https://ollama.com/library/deepseek-r1), [Gemma](https://ollama.com/library/gemma2), and more
+- Model families worth knowing: Qwen, DeepSeek, Llama, Mistral, Gemma, Kimi, GLM. All available through the [Ollama library](https://ollama.com/library).
 - Register with LiteLLM so all your tools can use them
 - Run coding assistants, chat models, and embedding models side by side
 
@@ -639,7 +657,7 @@ Email/webhook trigger → LLM classifies into categories (URGENT, QUESTION, BUG,
 - Log everything. Add a "Write to Google Sheets" or "Append to File" node so you can review what the workflow did.
 - Error handling matters. Use n8n's error workflows to catch API failures.
 - Keep prompts in one place. Use n8n's "Set" node to define your system prompt as a variable at the top of the workflow.
-- LiteLLM fallback groups. Configure `smart` and `fast` groups so workflows keep running if your primary model is down.
+- LiteLLM fallback groups. Configure `smart` and `fast` groups so workflows keep running if your primary model is down. (Claude Code has the same idea built in: the `fallbackModel` setting chains up to three fallback models when the primary is overloaded.)
 
 These five patterns cover the most common use cases. Everything else is variations on these.
 
@@ -979,7 +997,7 @@ AI-specific terms used in this playbook. Standard infrastructure terms (Docker, 
 | Agent | An AI assistant with a specific role, its own context, and access to tools. |
 | Subagent | An agent spawned by another agent to handle a specific subtask. |
 | MCP | Model Context Protocol. A standard that lets AI tools call external services directly. |
-| SSE | Server-Sent Events. An older transport method for MCP servers. Deprecated in the current MCP spec — new servers should use Streamable HTTP. |
+| SSE | Server-Sent Events. An older transport method for MCP servers, deprecated in the MCP spec. New servers use Streamable HTTP, which is fully stateless as of the 2026-07-28 spec revision. |
 | RAG | Retrieval-Augmented Generation. Feeding documents to an LLM so it can answer questions about them. |
 | Prompt injection | A security risk where malicious text tricks an AI into doing something unintended. |
 | Context window | The amount of text an LLM can process in a single conversation. Measured in tokens. |
@@ -995,8 +1013,17 @@ Things I haven't built yet but plan to explore.
 
 - Evaluation frameworks. Tools like [Braintrust](https://www.braintrust.dev/) and [promptfoo](https://www.promptfoo.dev/) for systematic prompt and model evaluation. Right now I'm comparing models by feel. Structured evals would let me measure quality, cost, and latency across providers and make data-driven routing decisions in LiteLLM.
 - Vector databases. [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), or [pgvector](https://github.com/pgvector/pgvector) for scaling RAG beyond n8n's built-in vector store nodes. The goal is a persistent knowledge base that agents and workflows can query across sessions.
-- Cross-domain agent coordination. I've shipped sequential pipelines where agents hand work to the next in line (Scout researches, Beat writes, Editor verifies — a four-stage editorial pipeline that publishes articles). The next step is having agents in different domains (infra + webapps + content) collaborate on a shared task list without me as the relay.
+- Cross-domain agent coordination. I've shipped sequential pipelines where agents hand work to the next in line (Scout researches, Beat writes, Editor verifies — a four-stage editorial pipeline that publishes articles). The next step is having agents in different domains (infra + webapps + content) collaborate on a shared task list without me as the relay. The plumbing for this is arriving: Claude Code now supports nested subagent delegation and has experimental agent-teams orchestration behind a flag, so this is moving from "roll your own" to "learn the built-in primitives".
 - Fine-tuning and adapters. Training small models on domain-specific data using [Unsloth](https://github.com/unslothai/unsloth) or [Axolotl](https://github.com/axolotl-ai-cloud/axolotl). A fine-tuned 7B model that knows your infrastructure might outperform a general 70B model for routine tasks.
+
+---
+
+## Changelog
+
+This stack moves fast. Major updates to the playbook are logged here so return visitors can see what changed.
+
+- **July 2026**: Added notes on the 2026-07-28 MCP spec revision (stateless core, deprecations, breaking error-code change). Updated model guidance to the Claude 5 family. Added new Claude Code capabilities: `/rewind`, `/cd`, `!` shell prefix, `--safe-mode`, recursive subagent delegation, `fallbackModel`. Added deterministic security controls (parameter-scoped permissions, sandbox credential isolation, auto-mode destruction guards). Restructured the local LLM section around memory tiers and model classes instead of specific model names.
+- **May 2026**: Initial public release.
 
 ---
 
