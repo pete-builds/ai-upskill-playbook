@@ -1,6 +1,6 @@
 # AI Upskill Playbook
 
-*By [pete-builds](https://github.com/pete-builds) · Last updated May 2026*
+*By [pete-builds](https://github.com/pete-builds) · Last updated July 2026 · [What changed](#changelog)*
 
 **A field guide to the applied AI stack, built one layer at a time.**
 
@@ -1015,6 +1015,15 @@ Things I haven't built yet but plan to explore.
 - Vector databases. [Chroma](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/), or [pgvector](https://github.com/pgvector/pgvector) for scaling RAG beyond n8n's built-in vector store nodes. The goal is a persistent knowledge base that agents and workflows can query across sessions.
 - Cross-domain agent coordination. I've shipped sequential pipelines where agents hand work to the next in line (Scout researches, Beat writes, Editor verifies — a four-stage editorial pipeline that publishes articles). The next step is having agents in different domains (infra + webapps + content) collaborate on a shared task list without me as the relay. The plumbing for this is arriving: Claude Code now supports nested subagent delegation and has experimental agent-teams orchestration behind a flag, so this is moving from "roll your own" to "learn the built-in primitives".
 - Fine-tuning and adapters. Training small models on domain-specific data using [Unsloth](https://github.com/unslothai/unsloth) or [Axolotl](https://github.com/axolotl-ai-cloud/axolotl). A fine-tuned 7B model that knows your infrastructure might outperform a general 70B model for routine tasks.
+
+---
+
+## Changelog
+
+This stack moves fast. Major updates to the playbook are logged here so return visitors can see what changed.
+
+- **July 2026**: Added notes on the 2026-07-28 MCP spec revision (stateless core, deprecations, breaking error-code change). Updated model guidance to the Claude 5 family. Added new Claude Code capabilities: `/rewind`, `/cd`, `!` shell prefix, `--safe-mode`, recursive subagent delegation, `fallbackModel`. Added deterministic security controls (parameter-scoped permissions, sandbox credential isolation, auto-mode destruction guards). Restructured the local LLM section around memory tiers and model classes instead of specific model names.
+- **May 2026**: Initial public release.
 
 ---
 
