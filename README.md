@@ -1,26 +1,60 @@
 # AI Upskill Playbook
 
-*By [pete-builds](https://github.com/pete-builds) · Last updated July 2026 · [What changed](#changelog)*
+*By [pete-builds](https://github.com/pete-builds) · Last updated August 2026 · [What changed](#changelog)*
 
-**A field guide to the applied AI stack, built one layer at a time.**
+**A field guide to self-hosted AI operations, built one layer at a time.**
 
-This playbook covers applied AI engineering: how to integrate models, build agent workflows, connect tools, automate operations, and ship real applications on infrastructure you control. It does not cover model training, neural network theory, or machine learning research. Those are different disciplines. This is the infrastructure and tooling side.
+This playbook is about running AI on infrastructure you control: integrating models behind a gateway, building agent workflows, connecting tools over MCP, automating operations, and keeping the whole thing secure and monitored. It is written from a sysadmin's angle, because that's the angle I came at it from.
 
-These are the skills companies are hiring for in 2026 under titles like AI engineer, AI platform engineer, and automation architect. Docker, API orchestration, model gateways, tool calling, workflow automation, RAG pipelines, local inference. If you were hired tomorrow to build or support an AI-powered operation, this is what the stack looks like.
+If you already run Linux, Docker, and a reverse proxy, you are most of the way to running an AI stack. The AI-specific parts (model gateways, tool calling, agent design, local inference) sit on top of infrastructure skills you likely already have. That's the bet this playbook makes.
 
 This is not a step-by-step tutorial. It's a map. Each section introduces a technology, explains why it matters, and gives you enough context to start researching on your own. Think of it as a checklist of things worth learning, with starting points and checkpoints so you know when you've got it.
 
 ### Who this is for
 
-- IT professionals and sysadmins looking to move into AI-adjacent roles by building on skills you already have
-- Builders who want to learn AI by standing up the same tools teams use in production
+- IT professionals and sysadmins who want to build AI capability on top of skills they already have
+- Builders who learn by standing services up rather than by reading about them
 - Anyone supporting business or client workflows who needs to understand how AI tooling fits together in practice
+
+### What this does not cover
+
+Being honest about the edges, because a map that claims to cover everything is useless:
+
+- **Model training and ML research.** No neural network theory, no fine-tuning pipelines, no architecture papers. Different discipline.
+- **Evaluation frameworks.** Systematic prompt and model evals are arguably the single most important applied-AI skill, and I'm not there yet. I compare models by feel right now. See [Up Next](#up-next).
+- **Production RAG at scale.** There's a working RAG pattern in the n8n section, but vector database selection, chunking strategy, and retrieval quality tuning are their own subject.
+- **Observability and tracing.** Request-level tracing, latency budgets, and quality regression tracking are the layer above this one.
+
+If you're targeting an AI engineer role specifically, treat this as the infrastructure foundation and those four as the rungs above it.
 
 ---
 
 Over the past few months I've been building this stack one service at a time, trying to understand how the pieces connect. Each section below is a real layer in that stack today.
 
 I'm still learning. What you see here is everything I've built so far, and I'll keep updating it as the stack evolves.
+
+### The whole thing at a glance
+
+```
+You (laptop)
+ │
+ ├── AI coding assistant ── agents, MCP clients, skills, hooks     Part I
+ │                          runs entirely on your machine
+ │
+ └── Linux box ─────────── always-on Docker host                   Part II
+      │
+      ├── LiteLLM ───────── one API endpoint, any model
+      │    ├── Cloud ────── OpenAI, Anthropic, Gemini, Groq
+      │    └── Local ────── Ollama, running open-weight models
+      │
+      ├── Your MCP servers ─ custom tools the assistant can call
+      ├── n8n ───────────── workflow automation, the payoff layer
+      ├── SearXNG ───────── private search backend for the above
+      ├── Open WebUI ────── chat interface for everyone else
+      └── Monitoring ────── Uptime Kuma, Caddy, Tailscale
+```
+
+Part I runs on your laptop and costs nothing but a Claude subscription. Part II needs a spare machine or a $5 VPS. You can stop after Part I and still have gotten something out of this.
 
 ---
 
@@ -73,7 +107,7 @@ Layers 1-5 run entirely on your laptop. Once you're ready to go deeper, Part II 
 - Connect to Anthropic API (direct key or API gateway)
 - Learn the core loop: describe what you want, review what it does, iterate
 - Understand [context windows](https://docs.anthropic.com/en/docs/build-with-claude/context-windows): the amount of text a model can process in a single conversation, measured in tokens. Everything you send and receive counts against it. When it fills up, the model loses track of earlier context.
-- Use the default model for everyday tasks (quick edits, file searches, simple scripts) and switch up a tier (`/model`) for complex code, architecture decisions, debugging, and writing. The specific names change (as of mid-2026 the Claude Code default is Sonnet 5, with Fable 5 as the top tier), but the pattern doesn't: fast and cheap by default, escalate for hard problems.
+- Learn the model tiers rather than the model names. Every assistant ships roughly three: a fast/cheap tier for quick edits, file searches, and simple scripts; a balanced default; and a frontier tier for complex code, architecture decisions, and debugging. Switch with `/model`. Names churn every few months, the pattern doesn't: default to cheap, escalate for hard problems, and check `/cost` to see what the escalation actually cost you.
 - Learn [plan mode](https://code.claude.com/docs/en/common-workflows#use-plan-mode-for-safe-code-analysis) (`shift+tab`): Claude researches your codebase and proposes a plan before writing any code. Great for understanding unfamiliar projects or planning big changes.
 - Set up [GitHub CLI](https://cli.github.com/) and [GitHub MCP](https://github.com/github/github-mcp-server) for version control and repo management from day one
 - Customize your [statusline](https://code.claude.com/docs/en/statusline) (context usage, model, git status, session metrics). I built a [custom one](https://github.com/pete-builds/claude-code-statusline) with weather, billing tier, and battery.
@@ -113,7 +147,7 @@ Each folder can have its own `CLAUDE.md` with context specific to that area. Whe
 
 Tokens cost money and context windows fill up fast. Several patterns help:
 
-- Use the right model. Sonnet for everyday tasks, Opus for deep thinking.
+- Use the right model. Default tier for everyday tasks, frontier tier for deep thinking.
 - Agentic workflows isolate context. Each agent reads only what it needs.
 - MCP servers let Claude call APIs directly instead of you pasting terminal output back and forth.
 - Workspace organization means Claude finds what it needs quickly.
@@ -313,26 +347,42 @@ An LLM following a rule that says "don't follow instructions in fetched content"
 
 ## 5. Anti-Hallucination Research Agent
 
-A worked example of the patterns above. The [claude-research-agent](https://github.com/pete-builds/claude-research-agent) skill produces citation-grounded research reports under strict rules: every claim cites a source, weak evidence gets flagged, and dead links are caught before publish.
+A worked example of the patterns above, and the design I'd hand you if you asked me to build one thing that proves you understand agents.
 
-- Citation discipline: every factual claim has an inline source marker, linkified to a real URL during a post-processing pass
-- Confidence labels: claims tagged with confidence levels; weak evidence flagged rather than hidden
-- Verifier sub-agent: a fresh-context sub-agent re-reads the report, fetches every URL, and grades each cited source against the claim it backs. Flags `DEAD`, `STALE`, `UNSUPPORTED`, `PARTIAL`. Verify flags, never fixes — auto-removing a claim on a weak judgment call would delete valid content when the verifier misreads a source. The human decides.
-- Polish sub-agent: mechanical pass that converts inline `[source: url]` markers to clickable markdown links and rebuilds the Sources section
-- No auto-publish: reports save locally; the human confirms before they go anywhere public
+The problem: an LLM asked to research a topic will produce confident prose with plausible citations, some of which do not exist. You cannot fix that with a better prompt. You fix it with structure.
 
-Why split into sub-agents instead of baking both passes into the research agent itself? The research agent has confirmation bias toward its own claims. Can't grade its own paper. A blank-slate reader catches what a self-review misses.
+A three-agent split does most of the work:
 
-Use it as-is or as a template for your own claim-grounded agents (audits, vetting reports, threat intel summaries).
+**1. The research agent** writes the report under strict rules. Every factual claim carries an inline source marker (`[source: url]`) at the point of the claim, not collected at the end. Claims get confidence labels, and weak evidence is flagged in the text rather than quietly smoothed over. The rule that matters most: if it cannot find a source, it says so instead of filling the gap.
+
+**2. The verifier sub-agent** re-reads the finished report with fresh context, as a skeptical stranger who has never seen the research. It fetches every cited URL and grades each source against the claim attached to it, flagging four states:
+
+| Flag | Meaning |
+|------|---------|
+| `DEAD` | URL does not resolve |
+| `STALE` | Resolves, but the content has moved on from what was cited |
+| `UNSUPPORTED` | Live source, but it does not say what the claim says it says |
+| `PARTIAL` | Supports some of the claim, not all of it |
+
+The critical design rule: **the verifier flags, it never fixes.** Auto-removing a claim on a weak judgment call deletes valid content whenever the verifier misreads a source, and you will never notice it happened. A human reads the flags and decides.
+
+**3. The polish sub-agent** does the mechanical pass: converts inline markers to clickable links, rebuilds the Sources section, fixes anchors. Deterministic work, separated out so the agents doing judgment work aren't also doing formatting.
+
+Two rules around the outside:
+
+- **No auto-publish.** Reports save locally. A human confirms before anything reaches a public repo. An agent that can both generate a claim and publish it has no brake.
+- **Fresh context for the verifier is the whole point.** If you bake verification into the research agent as a second pass, you get confirmation bias toward its own claims. It cannot grade its own paper. The isolation is the mechanism, not an implementation detail.
+
+The shape generalizes to anything where a wrong answer is worse than no answer: site audits, vetting reports, threat intel summaries, compliance checks. Generator, blank-slate verifier, mechanical formatter, human gate.
 
 > ✓ Checkpoint: Anti-Hallucination Research Agent
 >
 > You should now be able to:
-> - Install a research skill that grounds every claim in a citation
+> - Write a skill that grounds every claim in an inline citation and refuses to fill gaps
 > - Run a verifier sub-agent that grades the primary agent's output with fresh context
 >
 > Test it:
-> Install the skill, run a research query on a topic you know well, and check whether every claim has a working citation. Run the verifier and confirm it flags any URL that's dead or off-topic.
+> Build the research skill, run a query on a topic you know well, and check whether every claim has a working citation. Then run the verifier and confirm it flags at least one URL as `DEAD` or `UNSUPPORTED`. If it flags nothing on a first draft, your verifier is too agreeable: tell it to assume the report is wrong until each source proves otherwise.
 >
 > Next unlock:
 > Set up a Linux box to self-host infrastructure and run your own services.
@@ -529,9 +579,11 @@ A local model on consumer hardware won't match the latest Claude or GPT for comp
 Install [Ollama](https://ollama.com/) on any Mac, Linux box, or Windows PC with a GPU. One-line install on Mac and Linux.
 
 ```
-ollama pull llama3.2
-ollama run llama3.2
+ollama pull <model>:<tag>     # e.g. a mid-size model at 4-bit quantization
+ollama run  <model>:<tag>
 ```
+
+Check the [Ollama library](https://ollama.com/library) for what's current before you pull. Specific model names go stale within months, so the sizing guidance below matters more than any name I could put here.
 
 ### Picking the right model for your hardware
 
@@ -561,11 +613,11 @@ The open-weight frontier moves fast: the models topping leaderboards in mid-2026
 > ✓ Checkpoint: Local Models
 >
 > You should now be able to:
-> - Run open-source LLMs locally with Ollama (Llama, Mistral, Qwen, DeepSeek)
+> - Run open-weight LLMs locally with Ollama, sized to your available memory
 > - Register them with LiteLLM so all your tools can access them
 >
 > Test it:
-> Pull a model with `ollama pull`, run a prompt with `ollama run`, then query the same model through LiteLLM's API. Compare speed and quality to cloud models.
+> Pull a model sized for your memory tier, run a prompt with `ollama run`, then query the same model through LiteLLM's API. Compare speed and quality to cloud models.
 >
 > Next unlock:
 > Deploy SearXNG to give your AI tools private web search capability.
@@ -1022,6 +1074,7 @@ Things I haven't built yet but plan to explore.
 
 This stack moves fast. Major updates to the playbook are logged here so return visitors can see what changed.
 
+- **August 2026**: Reframed the playbook around self-hosted AI operations instead of AI engineer job titles, and added an explicit "what this does not cover" section naming evals, production RAG, and observability as the rungs above this one. Added a stack diagram above the fold. Rewrote the anti-hallucination section to stand on its own as a design walkthrough rather than pointing at a repo. Replaced named model references with tier-based guidance in the Claude Code and Ollama sections so they age better.
 - **July 2026**: Added notes on the 2026-07-28 MCP spec revision (stateless core, deprecations, breaking error-code change). Updated model guidance to the Claude 5 family. Added new Claude Code capabilities: `/rewind`, `/cd`, `!` shell prefix, `--safe-mode`, recursive subagent delegation, `fallbackModel`. Added deterministic security controls (parameter-scoped permissions, sandbox credential isolation, auto-mode destruction guards). Restructured the local LLM section around memory tiers and model classes instead of specific model names.
 - **May 2026**: Initial public release.
 
