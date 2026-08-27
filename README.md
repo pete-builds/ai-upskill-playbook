@@ -1,6 +1,6 @@
 # AI Upskill Playbook
 
-*By [pete-builds](https://github.com/pete-builds) · Last updated July 2026 · [What changed](#changelog)*
+*By [pete-builds](https://github.com/pete-builds) · Last updated August 2026 · [What changed](#changelog)*
 
 **A field guide to the applied AI stack, built one layer at a time.**
 
@@ -85,6 +85,7 @@ Layers 1-5 run entirely on your laptop. Once you're ready to go deeper, Part II 
 - Set up [hooks](https://code.claude.com/docs/en/hooks) for session start, tool calls, and notifications
 - Build [custom skills](https://code.claude.com/docs/en/skills) (slash commands) for repeatable workflows
 - Create [custom subagents](https://code.claude.com/docs/en/sub-agents) to delegate specialized tasks
+- Know that `/loop` exists: it re-runs a prompt or slash command on a schedule so an agent keeps working after you walk away. Covered in [Loops](#loops-agents-that-keep-working-after-you-walk-away).
 
 ### Organize your workspace
 
@@ -113,7 +114,7 @@ Each folder can have its own `CLAUDE.md` with context specific to that area. Whe
 
 Tokens cost money and context windows fill up fast. Several patterns help:
 
-- Use the right model. Sonnet for everyday tasks, Opus for deep thinking.
+- Use the right model. Default tier for everyday tasks, one tier up for deep thinking.
 - Agentic workflows isolate context. Each agent reads only what it needs.
 - MCP servers let Claude call APIs directly instead of you pasting terminal output back and forth.
 - Workspace organization means Claude finds what it needs quickly.
@@ -149,7 +150,7 @@ Start these from day one. They're easy to set up and painful to fix later.
 >
 > You should now be able to:
 > - Edit code, run commands, and iterate on problems without leaving your terminal
-> - Switch models (`/model opus` for deep work, back to Sonnet for quick tasks)
+> - Switch models (`/model` up a tier for deep work, back down for quick tasks)
 >
 > Test it:
 > Run `claude` in a project directory. Ask it to read a file, explain what it does, and make a small improvement. Review the changes and approve them.
@@ -232,14 +233,59 @@ Sub-agent verifiers. An agent has confirmation bias toward its own output. It ca
 
 Self-auditing agents. Periodically have an agent grade its own playbook against best practices and propose patches. If you find yourself manually correcting an agent in every spawn prompt, that correction belongs in the agent's definition. Ask the agent to audit itself, propose discrete `ADD`/`REPLACE` blocks, and apply them after review. Tools that build tools.
 
+### Loops: agents that keep working after you walk away
+
+Everything up to this point is request and response. You ask, the agent works, it stops, you come back. A loop turns that into a standing job. `/loop` re-fires a prompt or a slash command on a schedule inside the same session, so the agent keeps its context between iterations and builds on what it already found instead of starting cold every time.
+
+Two modes, and the difference matters:
+
+- **Fixed interval.** `/loop 10m /babysit-prs`. You set the cadence. Intervals are `Ns`, `Nm`, `Nh`, `Nd`, with a one-minute floor. Use it when the rhythm is genuinely time-based: a nightly sweep, an hourly check.
+- **Dynamic.** `/loop watch the deploy and tell me when it goes green`. Omit the interval and the model picks the delay before each next run based on what it just saw. Tight while a build is moving, backed off while nothing changes. Use it when the right cadence depends on the state of the thing you're watching, which is most of the time.
+
+A loop is a session-scoped job, not a daemon. It ends when the work is done, when you stop it, or when the schedule expires. Two habits keep it from becoming a token furnace:
+
+- **Make a quiet iteration cheap.** Check first, act second. "Nothing changed" should cost two tool calls, not a full re-read of the repo.
+- **Write the stop condition into the prompt.** "Keep going until all checks pass, then stop" is a loop. "Keep an eye on things" is a subscription you'll forget you bought.
+
+### Loop ideas worth stealing
+
+| Loop | What it does |
+|------|-------------|
+| `/loop 10m /babysit-prs` | Watches your open PRs, reads failing CI logs, pushes fixes. The one that pays for itself fastest. |
+| `/loop fix the failing service and verify it live, iterate until the health check passes` | Dynamic. Deploy, probe, read logs, adjust, re-probe. The value is that it doesn't stop at "that should work now". |
+| `/loop 30m check the deploy, stay quiet unless something changed` | Turns "did it go out yet?" from a browser tab you keep refreshing into a notification. |
+| `/loop 1d triage dependency PRs and merge the green ones` | Daily dependency hygiene without a Saturday afternoon spent on it. |
+| `/loop 6h check containers, disk, and cert expiry on the server; report only problems` | Infra sweep. Needs Part II. Pairs with the sysadmin agent in section 6. |
+| `/loop 1h watch releases and issues for the projects I depend on, summarize only material changes` | Vendor and upstream watch. Escalate to a full research run only when something real lands. |
+| `/loop 15m poll the long eval and summarize the results when it finishes` | Babysits anything slow: a training run, a bulk migration, a large scan. |
+| `/loop 1d draft tomorrow's standup from today's commits` | Cheap, boring, and you'll actually keep doing it. |
+
+Look at what the good ones have in common: read-only by default, an explicit "only speak up if X" filter so quiet iterations produce nothing, and a definition of done.
+
+### Guardrails before you leave one running
+
+- **Read-only unless you've really thought it through.** An unattended agent with write access to production is a different risk category than one you're watching approve-by-approve. Loops that fix things should fix things in a branch or on a box you can rebuild.
+- **Price it first.** A 5-minute loop is 288 runs a day. Every iteration spends tokens whether or not it finds anything. Check `/cost` after the first few and extrapolate before you let it run overnight.
+- **Loops multiply prompt injection exposure.** A loop that reads issue bodies, search results, or web pages every ten minutes is a standing intake pipe for attacker-controlled text, running while nobody is reading the output. Everything in [section 4](#4-securing-agentic-systems) applies double here.
+- **Note the job ID.** Recurring jobs auto-expire, but you want to be able to cancel one early without hunting for it.
+
+### When to use cron instead
+
+A loop lives inside a session. Close the terminal and it's gone. That's the right tradeoff while you're working, and the wrong one for anything that has to happen whether or not you're at the keyboard.
+
+For that, run Claude Code headless from cron on your Linux box (Part II): `claude -p "your prompt"` inside a shell script, output piped to email, Discord, or a notification service. Same agents, same skill files, same `CLAUDE.md`, no session required. Managed cloud schedules (`/schedule`) cover the same need if you don't want to run the box yourself.
+
+Rule of thumb: loop while you're working, cron when it needs to survive you closing the laptop.
+
 > ✓ Checkpoint: Agentic Workflows
 >
 > You should now be able to:
 > - Route topics to specialized agents using a trigger phrase and skill invocation
 > - Isolate context so each agent only reads what it needs
+> - Put an agent on a loop and have it keep working while you do something else
 >
 > Test it:
-> Create a simple agent with a skill file in `.claude/commands/`, a context doc, and an entry in your `CLAUDE.md` routing table. Invoke it with the trigger phrase and verify it reads its context.
+> Create a simple agent with a skill file in `.claude/commands/`, a context doc, and an entry in your `CLAUDE.md` routing table. Invoke it with the trigger phrase and verify it reads its context. Then run it on a loop (`/loop 5m /your-agent`), confirm the second iteration fires, and stop it.
 >
 > Next unlock:
 > Give your agents direct access to external services via cloud-hosted MCP servers.
@@ -996,6 +1042,7 @@ AI-specific terms used in this playbook. Standard infrastructure terms (Docker, 
 | LLM | Large Language Model. The AI models that power ChatGPT, Claude, Llama, etc. |
 | Agent | An AI assistant with a specific role, its own context, and access to tools. |
 | Subagent | An agent spawned by another agent to handle a specific subtask. |
+| Loop | A prompt or slash command scheduled to re-run inside the same session, either on a fixed interval or at delays the model picks itself. |
 | MCP | Model Context Protocol. A standard that lets AI tools call external services directly. |
 | SSE | Server-Sent Events. An older transport method for MCP servers, deprecated in the MCP spec. New servers use Streamable HTTP, which is fully stateless as of the 2026-07-28 spec revision. |
 | RAG | Retrieval-Augmented Generation. Feeding documents to an LLM so it can answer questions about them. |
@@ -1022,6 +1069,7 @@ Things I haven't built yet but plan to explore.
 
 This stack moves fast. Major updates to the playbook are logged here so return visitors can see what changed.
 
+- **August 2026**: Added a Loops section to Agentic Workflows: fixed-interval vs dynamic `/loop`, eight loop patterns worth stealing, cost and prompt-injection guardrails for unattended runs, and when to drop to headless cron instead. Added a Loop vocabulary entry.
 - **July 2026**: Added notes on the 2026-07-28 MCP spec revision (stateless core, deprecations, breaking error-code change). Updated model guidance to the Claude 5 family. Added new Claude Code capabilities: `/rewind`, `/cd`, `!` shell prefix, `--safe-mode`, recursive subagent delegation, `fallbackModel`. Added deterministic security controls (parameter-scoped permissions, sandbox credential isolation, auto-mode destruction guards). Restructured the local LLM section around memory tiers and model classes instead of specific model names.
 - **May 2026**: Initial public release.
 
