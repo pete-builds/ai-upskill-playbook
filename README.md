@@ -14,7 +14,7 @@ It is a map, not a tutorial. Each section says what to set up, why, and the mist
 |---|---|---|
 | [Beginning](#part-1-beginning) | Claude Code set up properly, and a first homelab running Pi-hole | Month 1 |
 | [Middle](#part-2-middle) | Agents, your own MCP servers, and a self-hosted AI stack | Months 2 to 5 |
-| [End](#part-3-end) | A system that tests, deploys, and watches itself | Month 6 on |
+| [End](#part-3-end) | A system that tests, patches, deploys, and watches itself | Month 6 on |
 
 You can stop after any part and have something useful. Each section ends with **Done when**, a test you can actually run.
 
@@ -31,7 +31,7 @@ You (laptop)
       │    ├── Cloud ──── Anthropic, OpenAI, Gemini
       │    └── Local ──── Ollama
       ├── Your MCP servers, n8n, SearXNG, Open WebUI               Middle
-      └── CI gates, autodeploy, alerts                             End
+      └── CI gates, patching, autodeploy, alerts                   End
 ```
 
 ---
@@ -98,6 +98,7 @@ An always-on Linux box at home is where everything in Part 2 will run. Start sma
 - **OS:** [Ubuntu Server LTS](https://ubuntu.com/download/server) or Debian, no desktop.
 - **Network:** give it a fixed address with a DHCP reservation on your router.
 - **Access:** SSH with keys, password login off.
+- **Updates:** confirm automatic security updates are on from day one (`systemctl status unattended-upgrades` on Ubuntu). The full maintenance setup is [section 12](#12-patching-and-maintenance-on-autopilot).
 - **Remote:** [Tailscale](https://tailscale.com/) so you can reach it from anywhere without opening ports.
 - **Containers:** [Docker Engine](https://docs.docker.com/engine/install/) plus compose, one folder and one `docker-compose.yml` per service. [Portainer](https://docs.portainer.io/start/install-ce) is a nice web UI if you want one.
 
@@ -373,7 +374,37 @@ For deploys, the version I trust: a git tag builds an image in CI, the server pu
 
 **Done when:** a pull request with a planted fake secret is blocked by CI, and a direct push to `main` is refused.
 
-## 12. Monitoring that you can trust
+## 12. Patching and maintenance on autopilot
+
+Building the stack is the easy part. Everything you stood up now needs updates forever, and you will not remember to do them by hand. Automate every layer, and make every automation report what it did.
+
+| Layer | What to automate | The catch |
+|---|---|---|
+| OS packages | `unattended-upgrades` on Ubuntu or Debian, `dnf-automatic` on RHEL-family. Security updates, applied daily | Covers only the distro's own security repo. Docker, Tailscale, and anything else from a third-party repo never update on their own. Put those on a schedule |
+| Kernel reboots | A small script that reboots in your quiet window only when a new kernel is installed (on Ubuntu, when `/var/run/reboot-required` exists) | Splitting install from reboot lets updates apply anytime without surprise downtime |
+| Containers | Pinned versions, moved forward by a nightly job that pulls the new image, waits for the health check, and rolls back if it fails | Auto-updaters like Watchtower have no health check or rollback, and cannot move a pinned version forward. One of my servers drifted two minor versions behind unnoticed |
+| Images you build | Dependabot for base images, plus a security-update layer in the Dockerfile that actually reruns | See the first note below |
+| Code dependencies | Dependabot, plus a job that regenerates lockfiles. Auto-merge patch and minor bumps once checks pass; majors wait for you | See the second note below |
+| Disk | Weekly `docker builder prune`, monthly `docker image prune` (dangling images only) | Never automate `docker image prune -a` or `docker volume prune`. Some images look unused and are not: one only a cron job runs, the rollback versions you keep |
+| Backups | Nightly, with a copy offsite for anything public | Test a restore on a schedule, not only when you need one |
+| Expiring things | TLS through Caddy or Cloudflare. Key expiry off for server logins like Tailscale | An expired login is a maintenance failure that looks like an outage |
+
+Rules that keep this from drifting:
+
+- **Every automated change sends a message:** what changed, and whether it came up healthy or rolled back. Silent automation is how drift hides.
+- **One quiet window,** with the timezone written next to every job.
+- **One list of every scheduled job,** and a weekly check that compares it to what is actually running. A hand edit on the box shows up as drift instead of disappearing.
+- **New scanner findings on unchanged code are normal.** Usually an old advisory just got a fix, which makes it visible. Read it before assuming something broke.
+
+> **What bit me:** a Dockerfile line `apt-get update && apt-get upgrade` was cached forever, because Docker keys that layer on the command text, which never changes. "Applies current security updates" meant the day the layer was first built. The fix was an `ADD` of the Debian security repo's `Release` file just above it. Docker keys `ADD` on the file's content, so the layer reruns when new updates publish.
+
+> **What bit me:** my auto-merge workflow arms each dependency PR the moment it opens, and GitHub merges it the moment checks turn green, however they got green. I pushed a lockfile fix to one of those branches and it merged two minutes later with no one running a merge. On an armed PR, pushing the fix is the merge.
+
+> **What bit me:** the same security scanner findings kept coming back on every Python image. They were in pip's own bundled packages inside the base image, not my dependencies, so no lockfile change could touch them. Removing pip from the final image did.
+
+**Done when:** you go a month without patching anything by hand, and your message log shows OS updates applied, a container updated or rolled back on its own, and a backup restore test, each with its result.
+
+## 13. Monitoring that you can trust
 
 - **Uptime Kuma** for "is it up," alerts to your phone or Discord.
 - **One daily summary message** instead of dashboards you will not open.
@@ -386,7 +417,7 @@ For deploys, the version I trust: a git tag builds an image in CI, the server pu
 
 **Done when:** you kill your monitoring on purpose and get an alert from outside it.
 
-## 13. What's next
+## 14. What's next
 
 The rungs above this playbook, which I am working on now:
 
@@ -414,6 +445,7 @@ If you read nothing else:
 10. Pin commit SHAs, image versions, and tool versions.
 11. Every fix leaves a test behind.
 12. Move lessons out of notes and into scripts and hooks.
+13. Everything you build needs patching forever. Automate it, and make the automation report.
 
 ---
 
@@ -496,7 +528,7 @@ Where it runs: server, port, how to deploy
 
 ## Changelog
 
-- **October 2026:** Rewritten from scratch, about half the length. Reorganized into Beginning, Middle, and End. Added a first-homelab section with a Pi-hole rollout. Added verification, the ratchet, CI gates, and monitoring as the End section, drawn from what actually ran and broke in my stack. Added the fundamentals underneath the tools: a raw API call, the agent loop, when an MCP server beats a skill, and what my RAG experiments showed. Every "What bit me" note is a real incident.
+- **October 2026:** Rewritten from scratch, about half the length. Reorganized into Beginning, Middle, and End. Added a first-homelab section with a Pi-hole rollout. Added verification, the ratchet, CI gates, patching and maintenance automation, and monitoring as the End section, drawn from what actually ran and broke in my stack. Added the fundamentals underneath the tools: a raw API call, the agent loop, when an MCP server beats a skill, and what my RAG experiments showed. Every "What bit me" note is a real incident.
 - **August 2026:** Reframed around self-hosted AI operations.
 - **July 2026:** MCP spec revision notes, Claude 5 models, new Claude Code features, local model sizing by memory tier.
 - **May 2026:** Initial public release.
