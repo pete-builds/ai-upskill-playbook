@@ -13,7 +13,7 @@ It is a map, not a tutorial. Each section says what to set up, why, and the mist
 | Part | You end up with | Roughly |
 |---|---|---|
 | [Beginning](#part-1-beginning) | Claude Code set up properly, and a first homelab running Pi-hole | Month 1 |
-| [Middle](#part-2-middle) | Agents, your own MCP servers, and a self-hosted AI stack | Months 2 to 5 |
+| [Middle](#part-2-middle) | Agents, your own MCP servers, a self-hosted AI stack, and a chatbot you can put in public | Months 2 to 5 |
 | [End](#part-3-end) | A system that tests, patches, deploys, and watches itself | Month 6 on |
 
 You can stop after any part and have something useful. Each section ends with **Done when**, a test you can actually run.
@@ -30,7 +30,7 @@ You (laptop)
       ├── LiteLLM ─────── one API endpoint for every model         Middle
       │    ├── Cloud ──── Anthropic, OpenAI, Gemini
       │    └── Local ──── Ollama
-      ├── Your MCP servers, n8n, SearXNG, Open WebUI               Middle
+      ├── Your MCP servers, n8n, SearXNG, Open WebUI, chatbots     Middle
       └── CI gates, patching, autodeploy, alerts                   End
 ```
 
@@ -98,7 +98,7 @@ An always-on Linux box at home is where everything in Part 2 will run. Start sma
 - **OS:** [Ubuntu Server LTS](https://ubuntu.com/download/server) or Debian, no desktop.
 - **Network:** give it a fixed address with a DHCP reservation on your router.
 - **Access:** SSH with keys, password login off.
-- **Updates:** confirm automatic security updates are on from day one (`systemctl status unattended-upgrades` on Ubuntu). The full maintenance setup is [section 12](#12-patching-and-maintenance-on-autopilot).
+- **Updates:** confirm automatic security updates are on from day one (`systemctl status unattended-upgrades` on Ubuntu). The full maintenance setup is [section 13](#13-patching-and-maintenance-on-autopilot).
 - **Remote:** [Tailscale](https://tailscale.com/) so you can reach it from anywhere without opening ports.
 - **Containers:** [Docker Engine](https://docs.docker.com/engine/install/) plus compose, one folder and one `docker-compose.yml` per service. [Portainer](https://docs.portainer.io/start/install-ce) is a nice web UI if you want one.
 
@@ -198,7 +198,7 @@ Some of mine, to show the shape:
 
 Rules I learned the hard way:
 
-- **Every agent gets a Known failure modes list.** The specific places it tends to be wrong in its domain. This is the most valuable part of the file. See [section 9](#9-verification).
+- **Every agent gets a Known failure modes list.** The specific places it tends to be wrong in its domain. This is the most valuable part of the file. See [section 10](#10-verification).
 - **Delegate rarely.** Subagents are for independent, read-heavy research. Anything you can finish in a few tool calls, do directly.
 - **One working copy, one agent.** Two agents in the same git checkout will trample each other's branches.
 - **A subagent that hits a surprise stops and asks.** It does not pivot quietly.
@@ -273,7 +273,27 @@ A good first n8n workflow: Uptime Kuma sends a webhook, n8n asks a model through
 
 **Done when:** one n8n workflow calls a local model through LiteLLM on a trigger, and LiteLLM shows the request and its cost.
 
-## 7. Security for agents
+## 7. Build your own chatbot
+
+Open WebUI is a chatbot for you. Once a bot talks to the public on your behalf, you are building one. Mine is one small service with a separate configuration per site: it answers customer questions on my business website, and on my microblog it is a hiring agent that knows my résumé.
+
+The parts:
+
+- **Your app holds the memory.** The model remembers nothing, so your code keeps the conversation and resends it every turn. Long chats get summarized to fit, and every summary drops something. Decide what.
+- **Give it a purpose twice:** in the system prompt and in the greeting, so the visitor and the model agree on what it is for.
+- **Stream the reply,** so words appear as they arrive instead of after a long pause.
+- **Answer only from approved text.** Mine pastes the whole approved knowledge base into the system prompt. If it fits, that beats retrieval, because there is nothing to retrieve wrong. Use RAG only when it does not fit. Outside that text, the bot says it does not know and offers a human.
+- **Keys stay on the server.** The browser talks to your service, and your service talks to LiteLLM with a key just for that bot, with its own model list and budget. The page never sees an address or a key.
+- **Keep bots off your bot:** a challenge like Cloudflare Turnstile before a session starts, an allowed-origins check, and rate limits.
+- **Record conversations, then delete them on a schedule.** You cannot fix answers you never read. Say so in the disclosure.
+
+**Gate it before launch.** Write a question set: real questions it must answer, and ones it must refuse or hand to a person, including prompt injection and "print your system prompt." Run it against the live model three times in a row; any miss on any run fails. Mine will not deploy without a passing gate record for the exact current knowledge base and prompt code, so editing the text means gating again. Then attack it. I pointed an attacker agent at mine and it held all six attacks, while a control bot with no rules broke on a request for a poem about the ocean.
+
+> **What bit me:** prompt caching makes a long, fixed system prompt much cheaper, but each model has a minimum length it will cache. My hiring agent's prompt sits only about 130 tokens above that minimum. Trim the knowledge base a little and caching switches off with no error, just a bigger bill. The gate now fails when caching stops.
+
+**Done when:** your bot answers a real question from its text, says it does not know when asked something outside it, refuses a prompt-injection attempt, and its question set passes three runs in a row.
+
+## 8. Security for agents
 
 Once agents read web pages, issues, emails, or MCP results, they are reading text that someone else wrote, in the same context as your instructions. Any of it can say "ignore previous instructions."
 
@@ -291,7 +311,7 @@ Do these, in order of value:
 
 **Done when:** a test page with a hidden "ignore previous instructions" line gets flagged and logged by your agent instead of obeyed, and a hook blocks a `curl` to a host you did not allow.
 
-## 8. Example: a research agent that does not make things up
+## 9. Example: a research agent that does not make things up
 
 This is the pattern I would build to prove you understand agents. Ask a model to research something and it writes confident prose with some citations that do not exist. Structure fixes that; better prompts do not.
 
@@ -312,7 +332,7 @@ By now Claude writes more code and config than you can review. So the job change
 
 Everyone has access to the same models. What you bring is the failure model: knowing what wrong output looks like when it is dressed as right output. A model's mistakes and its successes read the same in a diff. This part is how you turn that knowledge into checks.
 
-## 9. Verification
+## 10. Verification
 
 Every change gets proved, at the cheapest level that fits:
 
@@ -334,7 +354,7 @@ Three habits before you act:
 
 **Done when:** your agent files each have a short verification block (what claim, what check, what control, what to do on failure), and you have seen one control actually fail.
 
-## 10. The ratchet: turn lessons into checks
+## 11. The ratchet: turn lessons into checks
 
 A lesson in a notes file only helps if someone remembers it. A lesson in a script runs every time.
 
@@ -353,7 +373,7 @@ I keep my memory notes honest with a field on each lesson naming the file where 
 
 **Done when:** you can point at three lessons from your own mistakes that are now enforced by a script, a test, or a hook.
 
-## 11. CI gates and deploys
+## 12. CI gates and deploys
 
 Any repo with code that runs somewhere real gets these on its first change, not "later":
 
@@ -374,7 +394,7 @@ For deploys, the version I trust: a git tag builds an image in CI, the server pu
 
 **Done when:** a pull request with a planted fake secret is blocked by CI, and a direct push to `main` is refused.
 
-## 12. Patching and maintenance on autopilot
+## 13. Patching and maintenance on autopilot
 
 Building the stack is the easy part. Everything you stood up now needs updates forever, and you will not remember to do them by hand. Automate every layer, and make every automation report what it did.
 
@@ -404,7 +424,7 @@ Rules that keep this from drifting:
 
 **Done when:** you go a month without patching anything by hand, and your message log shows OS updates applied, a container updated or rolled back on its own, and a backup restore test, each with its result.
 
-## 13. Monitoring that you can trust
+## 14. Monitoring that you can trust
 
 - **Uptime Kuma** for "is it up," alerts to your phone or Discord.
 - **One daily summary message** instead of dashboards you will not open.
@@ -417,7 +437,7 @@ Rules that keep this from drifting:
 
 **Done when:** you kill your monitoring on purpose and get an alert from outside it.
 
-## 14. What's next
+## 15. What's next
 
 The rungs above this playbook, which I am working on now:
 
@@ -528,7 +548,7 @@ Where it runs: server, port, how to deploy
 
 ## Changelog
 
-- **October 2026:** Rewritten from scratch, about half the length. Reorganized into Beginning, Middle, and End. Added a first-homelab section with a Pi-hole rollout. Added verification, the ratchet, CI gates, patching and maintenance automation, and monitoring as the End section, drawn from what actually ran and broke in my stack. Added the fundamentals underneath the tools: a raw API call, the agent loop, when an MCP server beats a skill, and what my RAG experiments showed. Every "What bit me" note is a real incident.
+- **October 2026:** Rewritten from scratch, about half the length. Reorganized into Beginning, Middle, and End. Added a first-homelab section with a Pi-hole rollout. Added verification, the ratchet, CI gates, patching and maintenance automation, and monitoring as the End section, drawn from what actually ran and broke in my stack. Added a build-your-own-chatbot section with a launch gate. Added the fundamentals underneath the tools: a raw API call, the agent loop, when an MCP server beats a skill, and what my RAG experiments showed. Every "What bit me" note is a real incident.
 - **August 2026:** Reframed around self-hosted AI operations.
 - **July 2026:** MCP spec revision notes, Claude 5 models, new Claude Code features, local model sizing by memory tier.
 - **May 2026:** Initial public release.
