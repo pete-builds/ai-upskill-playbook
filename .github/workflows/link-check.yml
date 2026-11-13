@@ -1,0 +1,38 @@
+name: Link check
+
+on:
+  pull_request:
+  schedule:
+    - cron: "17 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # --max-redirects 0 turns any redirect into a failure, so a moved
+      # site is flagged the same way a dead one is. Sites that block
+      # automated checks go in .lycheeignore.
+      - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --no-progress
+            --max-redirects 0
+            --max-retries 3
+            --retry-wait-time 5
+            --timeout 30
+            --scheme https
+            --scheme http
+            --exclude-path .github
+            --
+            README.md CONTRIBUTING.md SECURITY.md
+          fail: true
+          jobSummary: true

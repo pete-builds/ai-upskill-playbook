@@ -1,24 +1,21 @@
 # Contributing
 
-Thanks for the interest. This is a personal project but external contributions are welcome.
+This is a personal write-up of my own stack, so it is not a project that takes code. Corrections and stories are welcome, through an issue.
 
-## Before you start
+## What to send
 
-For non-trivial changes (new features, architecture changes, breaking changes), please open an issue first to discuss the approach. That saves both of us from a PR that has to be redone.
+Open an [issue](../../issues) for any of these:
 
-For typo fixes, doc improvements, and small bug fixes, just send a PR.
+- **A correction.** A step that does not work, a link that is dead or has moved, a tool that has been renamed, or a claim that is wrong. Say which section and what you found, with a source if you have one.
+- **A "what bit me" story.** Something that went wrong in your own setup and what you learned. I may add it, credited or not as you prefer.
 
-## Development
+## What gets accepted
 
-See the README for environment setup and run instructions. Tests should pass before requesting review.
+Corrections that I can check are accepted. Stories need to be things that happened to you, in your own stack. I will not add promotional links, tool lists with no experience behind them, or generated text.
 
-## Pull requests
+## How I review
 
-- Branch from `main`
-- One focused change per PR
-- Match the existing code style (formatters and linters are configured where they apply)
-- A short description of what changed and why is enough; no template required
-- Don't bundle unrelated cleanup into a feature PR
+I read every issue and pull request by hand, and I decide what goes in. This is my account, so some suggestions will not fit even when they are good, and I may rewrite a change to match the surrounding text. Typo fixes can go straight to a pull request. For anything larger, please open an issue first.
 
 ## Reporting security issues
 
