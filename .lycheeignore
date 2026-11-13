@@ -1,0 +1,7 @@
+# Sites that block automated checks, one regex per line.
+# Add a URL here only after confirming by hand that it works in a browser,
+# and say why in a comment above it.
+
+# Answers 307 (temporary) to a dated docs path by design, so the undated
+# link stays current. Checked by hand.
+^https://modelcontextprotocol\.io/docs/getting-started/intro$

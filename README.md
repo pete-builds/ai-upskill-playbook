@@ -244,7 +244,7 @@ Each of these is one container. Add them in this order.
 | [n8n](https://n8n.io/) | Workflow automation: webhooks, schedules, LLM steps, Slack or email out. Where the stack pays off | Add an error workflow from day one, or failures disappear |
 | [Open WebUI](https://github.com/open-webui/open-webui) | A ChatGPT-style interface for everyone in the house, on your models | Connect it through LiteLLM so usage is tracked |
 
-**Local model sizing** (names change monthly; check the [Ollama library](https://ollama.com/library) and [LMArena](https://lmarena.ai/) for what is current):
+**Local model sizing** (names change monthly; check the [Ollama library](https://ollama.com/library) and [Arena](https://arena.ai/) (formerly LMArena) for what is current):
 
 | Memory (VRAM or Apple unified) | What runs well |
 |---|---|
@@ -441,7 +441,7 @@ Rules that keep this from drifting:
 
 The rungs above this playbook, which I am working on now:
 
-- **Evaluations.** Measuring model and prompt quality systematically instead of by feel, with tools like [promptfoo](https://www.promptfoo.dev/). Then letting results drive LiteLLM routing.
+- **Evaluations.** Measuring model and prompt quality systematically instead of by feel, with tools like [promptfoo](https://www.promptfoo.dev/). Then letting results drive LiteLLM routing. I built [open-model-arena](https://github.com/pete-builds/open-model-arena), a self-hosted blind model comparison arena, as my own tool for this.
 - **RAG done properly.** I have run the experiments, not a production system. What they taught me: when a RAG answer is wrong, the model usually summarized its chunks faithfully and retrieval handed it the wrong ones. Text that is similar to the question is not the same as text that answers it. How many chunks you retrieve matters more than almost any other setting. And retrieval always returns something, so test every system with an off-topic question. Next is doing this with a real vector store ([pgvector](https://github.com/pgvector/pgvector), [Chroma](https://www.trychroma.com/)).
 - **Tracing.** Request-level visibility into what each agent and workflow actually did, and what it cost.
 
